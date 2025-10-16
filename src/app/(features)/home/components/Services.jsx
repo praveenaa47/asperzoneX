@@ -7,56 +7,56 @@ const ServicesSection = () => {
       title: 'Travel & Holidays',
       description: 'Why Travelling Is The Best Investment You Will Ever Make',
       image: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=600&fit=crop',
-      link: '#'
+      link: `/travel-tourism/${1}`
     },
     {
       id: 2,
       title: 'Real Estate',
       description: 'Smart Solutions For Property Owners And Seekers',
       image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop',
-      link: '#'
+      link: `/real-estate/${1}`
     },
     {
       id: 3,
       title: 'Dream Home Consulting',
       description: 'Turn Your Vision Into Your Dream House',
       image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=600&fit=crop',
-      link: '#'
+      link: `/homeConsulting/${1}`
     },
     {
       id: 4,
       title: 'Car',
       description: "Drive Home The Car You've Been Waiting For.",
       image: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&h=600&fit=crop',
-      link: '#'
+      link: `/cars/${1}`
     },
     {
       id: 5,
       title: 'Finance And Business',
       description: 'Your Partner In Finance And Business Strategy',
       image: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=600&fit=crop',
-      link: '#'
+      link: `/finance-bussiness/${1}`
     },
     {
       id: 6,
       title: 'Higher Education',
       description: "Discover The Higher Education Path That's Right For You",
       image: 'https://static.vecteezy.com/system/resources/thumbnails/013/038/951/small_2x/close-up-the-boy-sits-staring-at-the-laptop-and-his-hand-is-holding-the-mouse-educational-concept-educational-information-search-copy-space-free-photo.jpg',
-      link: '#'
+      link: `/higher-education/${1}`
     },
     {
       id: 7,
       title: 'Talent & Career',
       description: 'Your Next Career Move Starts Here',
       image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=600&fit=crop',
-      link: '#'
+      link: `/careers/${1}`
     },
     {
       id: 8,
       title: 'Innovate X',
       description: 'Explore Your Inner Strength And Let Your Ideas Shine',
       image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop',
-      link: '#'
+      link: `/innovaate/${1}`
     }
   ];
 
