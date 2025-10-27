@@ -1,8 +1,11 @@
 "use client";
 import { Heart, Menu, SquareMenu } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 
 export default function Header() {
+const router = useRouter();
+
   return (
     <header className="bg-white  py-3">
       <div className="sm:px-6 lg:px-8">
@@ -63,7 +66,7 @@ export default function Header() {
             </button>
 
             <button
-              onClick={() => (window.location.href = "/")}
+              onClick={() =>router.push("/Login")}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
             >
               Log in

@@ -61,9 +61,9 @@ const ServicesSection = () => {
   ];
 
   return (
-    <section className="py-12 sm:py-16 lg:py-15 bg-white">
+    <section className="py-12 sm:py-10 lg:py-10 bg-white">
       <div className=" px-4 sm:px-6 ">
-        <h2 className="text-3xl sm:text-4xl lg:text-4xl font-bold text-center text-gray-900 sm:mb-12 ">
+        <h2 className="text-3xl sm:text-4xl lg:text-2xl font-bold text-center text-gray-900 sm:mb-12 ">
           Our Services For You
         </h2>
 

@@ -1,10 +1,13 @@
 "use client";
 import React, { useState } from 'react';
 import { Heart, MapPin, Phone, Search, ChevronRight } from 'lucide-react';
+import PriceSummary from '../carModals/PriceBreakModal';
 
 export default function CarDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   const images = [
     "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&h=600&fit=crop",
@@ -174,20 +177,31 @@ export default function CarDetailPage() {
                   <div>
                     <span className="text-3xl font-bold text-gray-900">₹4.5 Lakh</span>
                   </div>
-                  <button className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-semibold">
+                  <button 
+                   onClick={() => setIsModalOpen(true)}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-semibold">
                     Price breakup
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
 
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold text-lg transition-colors shadow-md hover:shadow-lg">
+                <button
+                onClick={()=>setIsModalOpen(true)}
+                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold text-lg transition-colors shadow-md hover:shadow-lg">
                   Enquiry now
                 </button>
               </div>
+
+
             </div>
           </div>
         </div>
       </div>
+
+ <PriceSummary 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 }

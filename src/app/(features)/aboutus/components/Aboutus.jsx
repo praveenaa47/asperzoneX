@@ -126,29 +126,52 @@ export default function AboutUs() {
       </section>
 
       {/* Our Journey Section */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-white py-16">
         <div className="max-w-4xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12 text-black">
             Our Journey
           </h2>
 
           <div className="relative">
-            {/* Timeline Line - Mobile */}
             <div className="md:hidden absolute left-8 top-0 bottom-0 w-1 bg-blue-300"></div>
-
-            {/* Timeline Line - Desktop */}
             <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-1 bg-blue-300"></div>
-
             {journeyMilestones.map((milestone, index) => (
               <div key={index} className="relative mb-16 last:mb-0">
+                <div className="hidden md:block absolute left-1/2 top-1/2 transform -translate-y-1/2 -translate-x-1/2 z-20">
+                  <div className="w-5 h-5 rounded-full bg-blue-600 border-4 border-blue-600"></div>
+                </div>
+
+                <div className="md:hidden absolute left-8 top-1/2 transform -translate-y-1/2 z-20">
+                  <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+                </div>
+                <div
+                  className={`hidden md:block absolute top-1/2 transform -translate-y-1/2 z-10
+       ${
+         index % 2 === 0
+           ? "left-1/2 -translate-x-1/2 -mr-6"
+           : "left-1/2 -translate-x-1/2 ml-6"
+       }`}
+                >
+                  <div
+                    className={`h-1 ${
+                      index % 2 === 0
+                        ? "w-6 -translate-x-full"
+                        : "w-6 translate-x-0"
+                    } 
+         bg-blue-300`}
+                  ></div>
+                </div>
+
+                <div className="md:hidden absolute top-1/2 left-10 transform -translate-y-1/2 z-10">
+                  <div className="h-0.5 w-6 bg-blue-300"></div>
+                </div>
+
+                {/* ===== Mobile Layout (stacked) ===== */}
                 <div className="md:hidden flex gap-6 items-start">
-                  {/* Year Badge */}
                   <div className="relative flex-shrink-0 z-10">
-                    <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold shadow-md text-xs">
+                    <div className=" text-white rounded-full flex items-center justify-center font-bold shadow-md text-xs">
                       {milestone.year}
                     </div>
-                    {/* small center dot aligned with the timeline */}
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-blue-600 rounded-full"></div>
                   </div>
 
                   <div className="flex-1 pt-2">
@@ -163,49 +186,40 @@ export default function AboutUs() {
                   </div>
                 </div>
 
-                {/* Desktop Layout */}
+                {/* ===== Desktop Layout ===== */}
                 <div className="hidden md:flex items-center">
                   {index % 2 === 0 ? (
                     <>
-                      {/* Left Content */}
-                      <div className="flex-1 pr-12 text-right">
+\                      <div className="flex-1 pr-12 text-right">
                         <div className="bg-white rounded-lg p-6 shadow-md">
+                          <div className="flex-shrink-0 z-10 text-blue-600 relative">
+                            {milestone.year}
+                          </div>
                           <h4 className="font-bold text-lg mb-2 text-black">
                             {milestone.title}
                           </h4>
-                          <p className="text-sm  leading-relaxed text-black">
+                          <p className="text-sm leading-relaxed text-black">
                             {milestone.description}
                           </p>
                         </div>
                       </div>
 
-                      {/* Year Badge */}
-                      <div className="flex-shrink-0 z-10 relative">
-                        <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg text-sm">
-                          {milestone.year}
-                        </div>
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-blue-600 rounded-full"></div>
-                      </div>
+                      {/* Year Badge (on center) */}
 
                       <div className="flex-1"></div>
                     </>
                   ) : (
                     <>
-                      {/* Left Spacer */}
                       <div className="flex-1"></div>
 
-                      {/* Year Badge */}
-                      <div className="flex-shrink-0 z-10 relative">
-                        <div className="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg text-sm">
-                          {milestone.year}
-                        </div>
-                        {/* Connection dot */}
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-blue-600 rounded-full"></div>
-                      </div>
+                      <div className="flex-shrink-0 z-10 relative"></div>
 
                       {/* Right Content */}
                       <div className="flex-1 pl-12 text-left">
                         <div className="bg-white rounded-lg p-6 shadow-md">
+                          <div className="   text-blue-600   flex items-center justify-center text-sm">
+                            {milestone.year}
+                          </div>
                           <h4 className="font-bold text-lg mb-2 text-black">
                             {milestone.title}
                           </h4>
@@ -262,8 +276,12 @@ export default function AboutUs() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="text-center">
-                <div className="flex justify-center mb-4 text-black">{feature.icon}</div>
-                <h3 className="font-bold text-lg mb-2 text-black">{feature.title}</h3>
+                <div className="flex justify-center mb-4 text-black">
+                  {feature.icon}
+                </div>
+                <h3 className="font-bold text-lg mb-2 text-black">
+                  {feature.title}
+                </h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
                   {feature.description}
                 </p>
@@ -308,20 +326,20 @@ export default function AboutUs() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-blue-600 py-12">
+      <section className="bg-white py-5 mb-10">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-white ">
+          <h2 className="text-xl font-bold text-black mb-5">
             Ready To Start Your Journey ?
           </h2>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 ">
-            <button className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+            <button className="px-8 py-3  text-white bg-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
               Contact Us
             </button>
-            <button className="px-8 py-3 bg-transparent text-white border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
+            <button className="px-8 py-3  text-white bg-blue-600 border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
               View Our Properties
             </button>
-            <button className="px-8 py-3 bg-transparent text-white border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
+            <button className="px-8 py-3  text-white bg-blue-600 border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
               Discover Travel Deals
             </button>
           </div>

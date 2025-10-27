@@ -1,6 +1,10 @@
+"use client"
 import { Heart, MapPin, Calendar, Gauge, ArrowRight, Phone } from "lucide-react";
+import SupportForm from "../modal/Form";
+import { useState } from "react";
 
 export default function SpecialDeal() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const cars = [
     {
       id: 1,
@@ -23,6 +27,13 @@ export default function SpecialDeal() {
         "Experience world-class shopping, desert safaris, and iconic skyscrapers in the heart of UAE.",
       image: "/tour.jpg",
     },
+    {
+      id: 4,
+      name: "Switzerland: Scenic Adventure",
+      location:
+        "Experience world-class shopping, desert safaris, and iconic skyscrapers in the heart of UAE.",
+      image: "/tour.jpg",
+    },
   ];
 
   return (
@@ -31,7 +42,7 @@ export default function SpecialDeal() {
     Special Deals
   </h2>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     {cars.map((car) => (
       <div
         key={car.id}
@@ -57,7 +68,9 @@ export default function SpecialDeal() {
           {/* Two Buttons */}
           <div className="flex gap-3">
             {/* Submit Enquiry */}
-            <button className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold py-2 rounded-lg transition-all duration-300 hover:bg-blue-600 hover:text-white">
+            <button
+            onClick={()=>setIsModalOpen(true)}
+            className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold py-2 rounded-lg transition-all duration-300 hover:bg-blue-600 hover:text-white">
               <ArrowRight className="w-5 h-5" />
               <span>Submit Enquiry</span>
             </button>
@@ -72,7 +85,25 @@ export default function SpecialDeal() {
       </div>
     ))}
   </div>
-</div>
+ {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full relative">
+            {/* Close Button */}
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-3 right-3 text-gray-600 hover:text-black text-2xl"
+            >
+              ×
+            </button>
+
+            {/* Support Form inside Modal */}
+            <div className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+              <SupportForm />
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
 
   );
 }

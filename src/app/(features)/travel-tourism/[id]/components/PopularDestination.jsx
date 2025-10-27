@@ -23,6 +23,13 @@ export default function CarListing() {
         "Experience world-class shopping, desert safaris, and iconic skyscrapers in the heart of UAE.",
       image: "/tour.jpg",
     },
+    {
+      id: 4,
+      name: "Switzerland: Scenic Adventure",
+      location:
+        "Experience world-class shopping, desert safaris, and iconic skyscrapers in the heart of UAE.",
+      image: "/tour.jpg",
+    },
   ];
 
   return (
@@ -31,7 +38,7 @@ export default function CarListing() {
         Popular Destinations
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {cars.map((car) => (
           <div
             key={car.id}

@@ -47,7 +47,7 @@ const FeaturedProperties = () => {
       ownerType: 'Owner',
       postedTime: '2 Weeks Ago',
       forSale: true
-    }
+    },
   ];
 
   const toggleFavorite = (id) => {
@@ -62,7 +62,7 @@ const FeaturedProperties = () => {
     <section className="py-12 sm:py-16 lg:py-3 bg-white">
       <div className=" px-4 sm:px-6 lg:px-10">
         {/* Section Header */}
-        <h2 className="text-3xl sm:text-4xl lg:text-4xl font-bold text-center text-gray-900 mb-10 sm:mb-12 lg:mb-16">
+        <h2 className="text-3xl sm:text-4xl lg:text-3xl font-bold text-center text-gray-900 mb-10 sm:mb-12 lg:mb-16">
           Featured Properties
         </h2>
 
