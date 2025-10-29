@@ -1,12 +1,14 @@
 "use client";
 import React, { useState } from 'react';
 import { Heart, Bed, Bath, Maximize } from 'lucide-react';
+import { FaArrowRightLong } from "react-icons/fa6";
+
 
 const PropertyCard = ({ district, image, price, beds, baths, sqft }) => {
   const [isFavorite, setIsFavorite] = useState(false);
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+    <div className="bg-white rounded-lg shadow-lg  overflow-hidden hover:shadow-xl transition-shadow duration-300">
       <div className="relative h-64 overflow-hidden group">
         <img 
           src={image} 
@@ -26,13 +28,13 @@ const PropertyCard = ({ district, image, price, beds, baths, sqft }) => {
         </h3>
       </div>
       
-      <div className="p-6">
-        <div className="mb-4">
+      <div className="p-4">
+        <div className="mb-1">
           <p className="text-sm text-gray-600 mb-1">Starting From</p>
           <p className="text-2xl font-bold text-gray-900">{price}</p>
         </div>
         
-        <div className="flex items-center gap-4 mb-6 text-sm text-gray-600">
+        <div className="flex items-center gap-4 mb-3 text-sm text-gray-600">
           <div className="flex items-center gap-1">
             <Bed className="w-4 h-4" />
             <span>{beds} Beds</span>
@@ -49,7 +51,8 @@ const PropertyCard = ({ district, image, price, beds, baths, sqft }) => {
         
         <button className="w-full py-2 px-2 border-2 border-gray-900 text-gray-900 rounded-lg font-semibold hover:bg-gray-900 hover:text-white transition-colors duration-300 flex items-center justify-center gap-2">
           View Properties
-          <span>→</span>
+          <span><FaArrowRightLong />
+</span>
         </button>
       </div>
     </div>
@@ -93,13 +96,13 @@ export default function App() {
   ];
 
   return (
-    <div className=" py-12 px-4 sm:px-6 lg:px-8">
+    <div className=" py-8 px-4 sm:px-6 lg:px-8">
       <div className="">
-        <h1 className="text-3xl font-bold text-center text-gray-900 mb-12">
+        <h1 className="text-3xl font-bold text-center text-gray-900 mb-5">
           Most Popular In Kerala's Districts
         </h1>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 p-9 lg:grid-cols-4 gap-6">
           {properties.map((property, index) => (
             <PropertyCard key={index} {...property} />
           ))}
