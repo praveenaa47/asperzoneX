@@ -1,28 +1,28 @@
 import React from 'react';
 
 const CarList = ({ cars, onEdit, onDelete, onStatusChange, onFeaturedToggle }) => {
-  const getStatusBadge = (status) => {
-    const statusClasses = {
-      active: 'bg-green-100 text-green-800',
-      inactive: 'bg-gray-100 text-gray-800'
-    };
-    
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusClasses[status]}`}>
-        {status === 'active' ? 'Active' : 'Inactive'}
-      </span>
-    );
+  const getStatusBadge = (isActive) => {
+  const statusClasses = {
+    true: 'bg-green-100 text-green-800',
+    false: 'bg-gray-100 text-gray-800'
   };
+  
+  return (
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusClasses[isActive]}`}>
+      {isActive ? 'Active' : 'Inactive'}
+    </span>
+  );
+};
 
-  const getFeaturedBadge = (featured) => {
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-        featured ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
-      }`}>
-        {featured ? 'Featured' : 'Standard'}
-      </span>
-    );
-  };
+  const getFeaturedBadge = (isFeatured) => {
+  return (
+    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+      isFeatured ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+    }`}>
+      {isFeatured ? 'Featured' : 'Standard'}
+    </span>
+  );
+};
 
   const formatPrice = (price) => {
     const formatter = new Intl.NumberFormat('en-US');
@@ -169,13 +169,13 @@ const CarList = ({ cars, onEdit, onDelete, onStatusChange, onFeaturedToggle }) =
                       </svg>
                     </button>
                     <select
-                      value={car.status}
-                      onChange={(e) => onStatusChange(car._id, e.target.value)}
-                      className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
+  value={car.isActive ? 'active' : 'inactive'}
+  onChange={(e) => onStatusChange(car._id, e.target.value)}
+  className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+>
+  <option value="active">Active</option>
+  <option value="inactive">Inactive</option>
+</select>
                   </div>
                 </td>
               </tr>

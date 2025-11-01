@@ -1,9 +1,15 @@
 "use client";
-
+import { usePathname } from "next/navigation";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 
 export default function AdminLayout({ children }) {
+  const pathname = usePathname();
+
+  if (pathname === "/admin/login") {
+    return <>{children}</>; 
+  }
+
   return (
     <div className="flex h-screen bg-gray-100">
       <div className="flex-shrink-0 h-full overflow-hidden transition-all duration-300 ease-in-out">

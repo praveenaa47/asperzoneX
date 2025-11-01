@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 
-const CarModal = ({ 
-  car, 
-  categories, 
-  brands, 
-  fuelTypes, 
-  transmissionTypes, 
+const CarModal = ({
+  car,
+  categories,
+  brands,
+  fuelTypes,
+  transmissionTypes,
   ownerTypes,
   colors,
   featuresList,
   priceUnits,
-  onSave, 
-  onClose 
+  onSave,
+  onClose
 }) => {
   const [formData, setFormData] = useState({
     title: '',
@@ -43,13 +43,13 @@ const CarModal = ({
       setFormData({
         title: car.title || '',
         description: car.description || '',
-        category: car.category || '',
+        category: car.category?._id || '',
         brand: car.brand || '',
         model: car.model || '',
         year: car.year || new Date().getFullYear(),
         fuelType: car.fuelType || '',
         transmission: car.transmission || '',
-        price: car.price || { amount: '', unit: 'total' },
+        price: car.price || { amount: '', unit: 'total', isNegotiable: false },
         location: car.location || { city: '', country: '' },
         kmsDriven: car.kmsDriven || '',
         color: car.color || '',
@@ -64,7 +64,7 @@ const CarModal = ({
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setFormData(prev => ({
@@ -80,7 +80,7 @@ const CarModal = ({
         [name]: value
       }));
     }
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -101,7 +101,7 @@ const CarModal = ({
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     if (files.length + imagePreviews.length > 10) {
       setErrors(prev => ({
         ...prev,
@@ -183,7 +183,7 @@ const CarModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
       // Convert string numbers to actual numbers
       const processedData = {
@@ -196,7 +196,7 @@ const CarModal = ({
         kmsDriven: parseInt(formData.kmsDriven),
         seatingCapacity: parseInt(formData.seatingCapacity)
       };
-      
+
       onSave(processedData);
     }
   };
@@ -232,7 +232,7 @@ const CarModal = ({
             {/* Basic Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-900">Basic Information</h3>
-              
+
               {/* Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -243,9 +243,8 @@ const CarModal = ({
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.title ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title ? 'border-red-300' : 'border-gray-300'
+                    }`}
                   placeholder="e.g., Toyota Camry 2023"
                 />
                 {errors.title && (
@@ -263,9 +262,8 @@ const CarModal = ({
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={3}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.description ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.description ? 'border-red-300' : 'border-gray-300'
+                    }`}
                   placeholder="Enter car description"
                 />
                 {errors.description && (
@@ -282,9 +280,8 @@ const CarModal = ({
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.category ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.category ? 'border-red-300' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select Category</option>
                   {categories.map(category => (
@@ -292,6 +289,7 @@ const CarModal = ({
                       {category.name}
                     </option>
                   ))}
+
                 </select>
                 {errors.category && (
                   <p className="mt-1 text-sm text-red-600">{errors.category}</p>
@@ -302,7 +300,7 @@ const CarModal = ({
             {/* Car Details */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-900">Car Details</h3>
-              
+
               {/* Brand & Model */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -313,9 +311,8 @@ const CarModal = ({
                     name="brand"
                     value={formData.brand}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.brand ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.brand ? 'border-red-300' : 'border-gray-300'
+                      }`}
                   >
                     <option value="">Select Brand</option>
                     {brands.map(brand => (
@@ -335,9 +332,8 @@ const CarModal = ({
                     name="model"
                     value={formData.model}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.model ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.model ? 'border-red-300' : 'border-gray-300'
+                      }`}
                     placeholder="Car model"
                   />
                   {errors.model && (
@@ -356,9 +352,8 @@ const CarModal = ({
                     name="year"
                     value={formData.year}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.year ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.year ? 'border-red-300' : 'border-gray-300'
+                      }`}
                   >
                     <option value="">Select Year</option>
                     {years.map(year => (
@@ -377,9 +372,8 @@ const CarModal = ({
                     name="color"
                     value={formData.color}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.color ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.color ? 'border-red-300' : 'border-gray-300'
+                      }`}
                   >
                     <option value="">Select Color</option>
                     {colors.map(color => (
@@ -402,9 +396,8 @@ const CarModal = ({
                     name="fuelType"
                     value={formData.fuelType}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.fuelType ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.fuelType ? 'border-red-300' : 'border-gray-300'
+                      }`}
                   >
                     <option value="">Select Fuel Type</option>
                     {fuelTypes.map(type => (
@@ -425,9 +418,8 @@ const CarModal = ({
                     name="transmission"
                     value={formData.transmission}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.transmission ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.transmission ? 'border-red-300' : 'border-gray-300'
+                      }`}
                   >
                     <option value="">Select Transmission</option>
                     {transmissionTypes.map(type => (
@@ -457,9 +449,8 @@ const CarModal = ({
                   name="kmsDriven"
                   value={formData.kmsDriven}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.kmsDriven ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.kmsDriven ? 'border-red-300' : 'border-gray-300'
+                    }`}
                   placeholder="Kilometers driven"
                 />
                 {errors.kmsDriven && (
@@ -474,9 +465,8 @@ const CarModal = ({
                   name="seatingCapacity"
                   value={formData.seatingCapacity}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.seatingCapacity ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.seatingCapacity ? 'border-red-300' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select Capacity</option>
                   {seatingOptions.map(seats => (
@@ -495,9 +485,8 @@ const CarModal = ({
                   name="ownerType"
                   value={formData.ownerType}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.ownerType ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.ownerType ? 'border-red-300' : 'border-gray-300'
+                    }`}
                 >
                   <option value="">Select Owner Type</option>
                   {ownerTypes.map(type => (
@@ -529,9 +518,8 @@ const CarModal = ({
                       name="price.amount"
                       value={formData.price.amount}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors['price.amount'] ? 'border-red-300' : 'border-gray-300'
-                      }`}
+                      className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors['price.amount'] ? 'border-red-300' : 'border-gray-300'
+                        }`}
                       placeholder="Price amount"
                     />
                     {errors['price.amount'] && (
@@ -546,7 +534,7 @@ const CarModal = ({
                       name="price.unit"
                       value={formData.price.unit}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       {priceUnits.map(unit => (
                         <option key={unit.value} value={unit.value}>
@@ -571,9 +559,8 @@ const CarModal = ({
                       name="location.city"
                       value={formData.location.city}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors['location.city'] ? 'border-red-300' : 'border-gray-300'
-                      }`}
+                      className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors['location.city'] ? 'border-red-300' : 'border-gray-300'
+                        }`}
                       placeholder="City"
                     />
                     {errors['location.city'] && (
@@ -589,9 +576,8 @@ const CarModal = ({
                       name="location.country"
                       value={formData.location.country}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors['location.country'] ? 'border-red-300' : 'border-gray-300'
-                      }`}
+                      className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors['location.country'] ? 'border-red-300' : 'border-gray-300'
+                        }`}
                       placeholder="Country"
                     />
                     {errors['location.country'] && (
@@ -624,7 +610,7 @@ const CarModal = ({
           {/* Image Upload */}
           <div className="border-t pt-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Car Images</h3>
-            
+
             {/* Image Previews */}
             {imagePreviews.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">

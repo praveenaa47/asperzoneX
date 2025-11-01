@@ -1,20 +1,25 @@
 import React from 'react';
 
-const CategoryList = ({ categories, onEdit, onDelete, onStatusChange }) => {
-  const getStatusBadge = (status) => {
-    const statusClasses = {
-      active: 'bg-green-100 text-green-800',
-      inactive: 'bg-gray-100 text-gray-800'
-    };
-    
+const CategoryList = ({ categories, onEdit, onDelete, onStatusChange, loading = false }) => {
+  const getStatusBadge = (isActive) => {
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusClasses[status]}`}>
-        {status === 'active' ? 'Active' : 'Inactive'}
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+        isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+      }`}>
+        {isActive ? 'Active' : 'Inactive'}
       </span>
     );
   };
 
-  
+  if (loading && categories.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow text-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Loading categories...</p>
+      </div>
+    );
+  }
+
   if (categories.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow text-center py-12">
@@ -40,6 +45,9 @@ const CategoryList = ({ categories, onEdit, onDelete, onStatusChange }) => {
                 Description
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Type
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -52,7 +60,7 @@ const CategoryList = ({ categories, onEdit, onDelete, onStatusChange }) => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {categories.map((category) => (
-              <tr key={category.id} className="hover:bg-gray-50">
+              <tr key={category._id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-12 w-12 bg-gray-200 rounded-lg overflow-hidden">
@@ -61,14 +69,17 @@ const CategoryList = ({ categories, onEdit, onDelete, onStatusChange }) => {
                           src={category.image}
                           alt={category.name}
                           className="h-12 w-12 object-cover"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
                         />
-                      ) : (
-                        <div className="h-12 w-12 bg-gray-300 rounded-lg flex items-center justify-center">
-                          <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                      )}
+                      ) : null}
+                      <div className="h-12 w-12 bg-gray-300 rounded-lg flex items-center justify-center hidden">
+                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
                     </div>
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900">
@@ -82,9 +93,13 @@ const CategoryList = ({ categories, onEdit, onDelete, onStatusChange }) => {
                     {category.description}
                   </div>
                 </td>
-                
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(category.status)}
+                  <div className="text-sm text-gray-600">
+                    {category.link ? category.link.replace('/', '') : 'N/A'}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {getStatusBadge(category.isActive)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {new Date(category.createdAt).toLocaleDateString()}
@@ -93,26 +108,29 @@ const CategoryList = ({ categories, onEdit, onDelete, onStatusChange }) => {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => onEdit(category)}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-blue-600 hover:text-blue-900 p-1 rounded disabled:opacity-50"
                       title="Edit"
+                      disabled={loading}
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </button>
                     <button
-                      onClick={() => onDelete(category.id)}
-                      className="text-red-600 hover:text-red-900"
+                      onClick={() => onDelete(category._id)}
+                      className="text-red-600 hover:text-red-900 p-1 rounded disabled:opacity-50"
                       title="Delete"
+                      disabled={loading}
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
                     <select
-                      value={category.status}
-                      onChange={(e) => onStatusChange(category.id, e.target.value)}
-                      className="text-xs text-black border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      value={category.isActive ? 'active' : 'inactive'}
+                      onChange={(e) => onStatusChange(category._id, e.target.value)}
+                      className="text-xs text-black border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                      disabled={loading}
                     >
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
