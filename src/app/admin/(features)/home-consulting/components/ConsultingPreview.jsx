@@ -5,15 +5,25 @@ const ConsultingList = ({
   onEdit, 
   onDelete, 
   onStatusChange, 
-  onFeaturedToggle 
+  onFeaturedToggle,
+  loading 
 }) => {
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (isActive) => {
     const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
-    if (status === 'active') {
+    if (isActive) {
       return `${baseClasses} bg-green-100 text-green-800`;
     }
     return `${baseClasses} bg-gray-100 text-gray-800`;
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-8 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-2 text-gray-600">Loading pages...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -65,9 +75,9 @@ const ConsultingList = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <select
-                    value={page.status}
+                    value={page.isActive ? 'active' : 'inactive'}
                     onChange={(e) => onStatusChange(page._id, e.target.value)}
-                    className={`text-sm border-none focus:ring-0 focus:outline-none ${getStatusBadge(page.status)}`}
+                    className={`text-sm border-none focus:ring-0 focus:outline-none ${getStatusBadge(page.isActive)}`}
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -88,7 +98,7 @@ const ConsultingList = ({
                   </button>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {page.updatedAt}
+                  {new Date(page.updatedAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex space-x-2">

@@ -1,111 +1,17 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import PropertyList from './components/PropertyList';
 import PropertyModal from './components/PropertyModel';
+import { getMaincategory } from "@/redux/slices/MainCategorySlice";
+import { addEstateproperty, deleteEstateproperty, getEstateproperty, updateEstateproperty } from '@/redux/slices/realestateProprtySlice';
 
 const PropertyManagement = () => {
-  const [properties, setProperties] = useState([
-    {
-      _id: '1',
-      title: "Luxury 3BHK Apartment in Downtown",
-      description: "Beautiful apartment with amazing views of the city skyline. Modern amenities and premium finishes throughout.",
-      category: '68fb238f7d0b9330fa2a81e7',
-      categoryName: 'Apartments',
-      propertyType: 'apartment',
-      area: { value: 1200, unit: 'sqft' },
-      bedrooms: 3,
-      bathrooms: 2,
-      furnished: 'semi-furnished',
-      price: { amount: 500000, unit: 'total' },
-      location: {
-        city: 'Dubai',
-        country: 'UAE',
-        address: 'Downtown Dubai'
-      },
-      floor: 15,
-      totalFloors: 25,
-      propertyAge: 2,
-      parking: 2,
-      amenities: ['Swimming Pool', 'Gym', 'Parking', 'Security'],
-      features: ['AC', 'Heating', 'WiFi', 'Balcony', 'Laundry'],
-      images: [
-        'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400',
-        'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=400'
-      ],
-      status: 'active',
-      createdAt: '2024-01-15',
-      featured: true
-    },
-    {
-      _id: '2',
-      title: "Modern Studio in Business Bay",
-      description: "Fully furnished studio apartment in the heart of Business Bay with access to all modern facilities.",
-      category: '68fb238f7d0b9330fa2a81e8',
-      categoryName: 'Studios',
-      propertyType: 'studio',
-      area: { value: 600, unit: 'sqft' },
-      bedrooms: 1,
-      bathrooms: 1,
-      furnished: 'fully-furnished',
-      price: { amount: 250000, unit: 'total' },
-      location: {
-        city: 'Dubai',
-        country: 'UAE',
-        address: 'Business Bay'
-      },
-      floor: 12,
-      totalFloors: 30,
-      propertyAge: 1,
-      parking: 1,
-      amenities: ['Gym', 'Security', 'Concierge'],
-      features: ['AC', 'WiFi', 'Smart Home', 'Balcony'],
-      images: [
-        'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'
-      ],
-      status: 'active',
-      createdAt: '2024-01-14',
-      featured: false
-    },
-    {
-      _id: '3',
-      title: "Villa in Palm Jumeirah",
-      description: "Luxurious 4-bedroom villa with private beach access and stunning sea views.",
-      category: '68fb238f7d0b9330fa2a81e9',
-      categoryName: 'Villas',
-      propertyType: 'villa',
-      area: { value: 3500, unit: 'sqft' },
-      bedrooms: 4,
-      bathrooms: 4,
-      furnished: 'unfurnished',
-      price: { amount: 1200000, unit: 'total' },
-      location: {
-        city: 'Dubai',
-        country: 'UAE',
-        address: 'Palm Jumeirah'
-      },
-      floor: 1,
-      totalFloors: 2,
-      propertyAge: 3,
-      parking: 3,
-      amenities: ['Swimming Pool', 'Gym', 'Parking', 'Security', 'Garden'],
-      features: ['AC', 'Heating', 'WiFi', 'Balcony', 'Laundry', 'Sea View'],
-      images: [
-        'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=400'
-      ],
-      status: 'inactive',
-      createdAt: '2024-01-10',
-      featured: true
-    }
-  ]);
-
-  const [categories, setCategories] = useState([
-    { _id: '68fb238f7d0b9330fa2a81e7', name: 'Apartments' },
-    { _id: '68fb238f7d0b9330fa2a81e8', name: 'Studios' },
-    { _id: '68fb238f7d0b9330fa2a81e9', name: 'Villas' },
-    { _id: '68fb238f7d0b9330fa2a81ea', name: 'Townhouses' },
-    { _id: '68fb238f7d0b9330fa2a81eb', name: 'Penthouses' }
-  ]);
-
+  const dispatch = useDispatch();
+  const { data: properties, loading, error } = useSelector((state) => state.property);
+  const { data: categoryData } = useSelector((state) => state.category);
+  
+  const [categories, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState(null);
   const [filters, setFilters] = useState({
@@ -115,15 +21,27 @@ const PropertyManagement = () => {
     categoryFilter: 'all'
   });
 
+  // Load properties and categories on component mount
+  useEffect(() => {
+    dispatch(getEstateproperty());
+    dispatch(getMaincategory());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (categoryData?.length > 0) {
+      setCategories(categoryData);
+    }
+  }, [categoryData]);
+
   // Filter properties based on search and filters
   const filteredProperties = properties.filter(property => {
-    const matchesSearch = property.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-                         property.location.city.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-                         property.location.address.toLowerCase().includes(filters.searchTerm.toLowerCase());
+    const matchesSearch = property.title?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+                         property.location?.city?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+                         property.location?.address?.toLowerCase().includes(filters.searchTerm.toLowerCase());
     
-    const matchesStatus = filters.statusFilter === 'all' || property.status === filters.statusFilter;
+    const matchesStatus = filters.statusFilter === 'all' || property.isActive === (filters.statusFilter === 'active');
     const matchesPropertyType = filters.propertyTypeFilter === 'all' || property.propertyType === filters.propertyTypeFilter;
-    const matchesCategory = filters.categoryFilter === 'all' || property.category === filters.categoryFilter;
+    const matchesCategory = filters.categoryFilter === 'all' || property.category?._id === filters.categoryFilter;
     
     return matchesSearch && matchesStatus && matchesPropertyType && matchesCategory;
   });
@@ -138,56 +56,110 @@ const PropertyManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleSaveProperty = (propertyData) => {
-    if (editingProperty) {
-      // Update existing property
-      setProperties(prev =>
-        prev.map(prop =>
-          prop._id === editingProperty._id
-            ? { 
-                ...prop, 
-                ...propertyData,
-                categoryName: categories.find(cat => cat._id === propertyData.category)?.name || 'Unknown'
-              }
-            : prop
-        )
-      );
-    } else {
-      // Add new property
-      const newProperty = {
-        ...propertyData,
-        _id: Math.random().toString(36).substr(2, 9),
-        categoryName: categories.find(cat => cat._id === propertyData.category)?.name || 'Unknown',
-        status: 'active',
-        createdAt: new Date().toISOString().split('T')[0],
-        featured: false
-      };
-      setProperties(prev => [...prev, newProperty]);
+  const handleSaveProperty = async (propertyData) => {
+    try {
+      const formData = new FormData();
+      
+      // Append basic fields
+      formData.append('title', propertyData.title);
+      formData.append('description', propertyData.description);
+      formData.append('category', propertyData.category);
+      formData.append('propertyType', propertyData.propertyType);
+      formData.append('bedrooms', propertyData.bedrooms.toString());
+      formData.append('bathrooms', propertyData.bathrooms.toString());
+      formData.append('furnished', propertyData.furnished);
+      formData.append('productType', 'Property'); // Required field
+
+      // Append area object
+      formData.append('area[value]', propertyData.area.value.toString());
+      formData.append('area[unit]', propertyData.area.unit);
+
+      // Append price object
+      formData.append('price[amount]', propertyData.price.amount.toString());
+      formData.append('price[unit]', propertyData.price.unit);
+      formData.append('price[isNegotiable]', 'false');
+
+      // Append location object
+      formData.append('location[city]', propertyData.location.city);
+      formData.append('location[country]', propertyData.location.country);
+      formData.append('location[address]', propertyData.location.address);
+
+      // Append optional fields if they exist
+      if (propertyData.floor) formData.append('floor', propertyData.floor.toString());
+      if (propertyData.totalFloors) formData.append('totalFloors', propertyData.totalFloors.toString());
+      if (propertyData.propertyAge) formData.append('propertyAge', propertyData.propertyAge.toString());
+      if (propertyData.parking) formData.append('parking', propertyData.parking.toString());
+
+      // Append amenities as array
+      propertyData.amenities.forEach((amenity, index) => {
+        formData.append(`amenities[${index}]`, amenity);
+      });
+
+      // Append features as array
+      propertyData.features.forEach((feature, index) => {
+        formData.append(`features[${index}]`, feature);
+      });
+
+      // Handle images - append new files
+      propertyData.images.forEach((image, index) => {
+        if (typeof image !== 'string') { // Only append new files, not URLs
+          formData.append('images', image);
+        }
+      });
+
+      if (editingProperty) {
+        // Update existing property
+        await dispatch(updateEstateproperty({ 
+          id: editingProperty._id, 
+          formData 
+        })).unwrap();
+      } else {
+        // Add new property
+        await dispatch(addEstateproperty(formData)).unwrap();
+      }
+      
+      setIsModalOpen(false);
+      setEditingProperty(null);
+    } catch (error) {
+      console.error('Failed to save property:', error);
+      alert('Failed to save property. Please try again.');
     }
-    setIsModalOpen(false);
-    setEditingProperty(null);
   };
 
-  const handleDeleteProperty = (id) => {
+  const handleDeleteProperty = async (id) => {
     if (window.confirm('Are you sure you want to delete this property?')) {
-      setProperties(prev => prev.filter(property => property._id !== id));
+      try {
+        await dispatch(deleteEstateproperty(id)).unwrap();
+      } catch (error) {
+        console.error('Failed to delete property:', error);
+        alert('Failed to delete property. Please try again.');
+      }
     }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    setProperties(prev =>
-      prev.map(property =>
-        property._id === id ? { ...property, status: newStatus } : property
-      )
-    );
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const formData = new FormData();
+      formData.append('isActive', newStatus === 'active');
+      
+      await dispatch(updateEstateproperty({ id, formData })).unwrap();
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      alert('Failed to update status. Please try again.');
+    }
   };
 
-  const handleFeaturedToggle = (id) => {
-    setProperties(prev =>
-      prev.map(property =>
-        property._id === id ? { ...property, featured: !property.featured } : property
-      )
-    );
+  const handleFeaturedToggle = async (id) => {
+    try {
+      const property = properties.find(p => p._id === id);
+      const formData = new FormData();
+      formData.append('isFeatured', !property.isFeatured);
+      
+      await dispatch(updateEstateproperty({ id, formData })).unwrap();
+    } catch (error) {
+      console.error('Failed to toggle featured:', error);
+      alert('Failed to update featured status. Please try again.');
+    }
   };
 
   const propertyTypes = [
@@ -229,6 +201,35 @@ const PropertyManagement = () => {
     'Hardwood Floors', 'Marble Floors', 'Central AC'
   ];
 
+  // Show loading state
+  if (loading && properties.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading properties...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error && properties.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center text-red-600">
+          <p>Error loading properties: {error}</p>
+          <button
+            onClick={() => dispatch(getEstateproperty())}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -238,7 +239,6 @@ const PropertyManagement = () => {
           <p className="text-gray-600">Manage your property listings and inventory</p>
         </div>
 
-    
         {/* Controls */}
         <div className="bg-white rounded-lg shadow mb-6 p-4">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">

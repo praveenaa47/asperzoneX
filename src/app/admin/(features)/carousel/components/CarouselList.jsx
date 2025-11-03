@@ -1,3 +1,4 @@
+import { Edit, Trash2 } from 'lucide-react';
 import React from 'react';
 
 const CarouselList = ({ 
@@ -6,20 +7,40 @@ const CarouselList = ({
   onDelete, 
   onStatusChange, 
   onFeaturedToggle,
-  categories 
+  categories,
+  loading 
 }) => {
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (isActive) => {
     const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
-    if (status === 'active') {
+    if (isActive) {
       return `${baseClasses} bg-green-100 text-green-800`;
     }
     return `${baseClasses} bg-gray-100 text-gray-800`;
   };
 
   const getCategoryLabel = (categoryValue) => {
-    const category = categories.find(cat => cat.value === categoryValue);
-    return category ? category.label : categoryValue;
+    // Handle both string category ID and category object
+    const categoryId = typeof categoryValue === 'object' 
+      ? categoryValue?._id 
+      : categoryValue;
+    
+    const category = categories.find(cat => cat.value === categoryId);
+    return category ? category.label : (categoryValue?.name || 'No Category');
   };
+
+  const getPageLabel = (page) => {
+    if (!page) return 'None';
+    return page.charAt(0).toUpperCase() + page.slice(1);
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-8 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-2 text-gray-600">Loading carousels...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -31,13 +52,10 @@ const CarouselList = ({
                 Carousel Item
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Category
+                Category & Page
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Featured
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Last Updated
@@ -72,37 +90,26 @@ const CarouselList = ({
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="inline-flex px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
-                    {getCategoryLabel(carousel.category)}
-                  </span>
+                <td className="px-6 py-4">
+                  <div className="text-sm text-gray-900">
+                    <strong>Category:</strong> {getCategoryLabel(carousel.category)}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    <strong>Page:</strong> {getPageLabel(carousel.page)}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <select
-                    value={carousel.status}
-                    onChange={(e) => onStatusChange(carousel._id, e.target.value)}
-                    className={`text-sm border-none focus:ring-0 focus:outline-none ${getStatusBadge(carousel.status)}`}
+                    value={carousel.isActive}
+                    onChange={(e) => onStatusChange(carousel._id, e.target.value === 'true')}
+                    className={`text-sm border-none focus:ring-0 focus:outline-none ${getStatusBadge(carousel.isActive)}`}
                   >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
                   </select>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <button
-                    onClick={() => onFeaturedToggle(carousel._id)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                      carousel.featured ? 'bg-blue-600' : 'bg-gray-200'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        carousel.featured ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {carousel.updatedAt}
+                  {new Date(carousel.updatedAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex space-x-2">
@@ -110,13 +117,13 @@ const CarouselList = ({
                       onClick={() => onEdit(carousel)}
                       className="text-blue-600 hover:text-blue-900 px-3 py-1 border border-blue-600 rounded hover:bg-blue-50"
                     >
-                      Edit
+                      <Edit></Edit>
                     </button>
                     <button
                       onClick={() => onDelete(carousel._id)}
                       className="text-red-600 hover:text-red-900 px-3 py-1 border border-red-600 rounded hover:bg-red-50"
                     >
-                      Delete
+                      <Trash2></Trash2>
                     </button>
                   </div>
                 </td>

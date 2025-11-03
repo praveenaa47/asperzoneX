@@ -1,44 +1,15 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import TestimonialList from './components/TestimonialList';
 import TestimonialForm from './components/TestimonialForm';
+import { addTestimonial, deleteTestimonial, getAllTestimonials, updateTestimonial } from '@/redux/slices/TestimonialSlice';
+import { getMaincategory } from '@/redux/slices/MainCategorySlice';
 
 const TestimonialManagement = () => {
-  const [testimonials, setTestimonials] = useState([
-    {
-      _id: '1',
-      name: "John Doe",
-      message: "Excellent service! The consulting helped us transform our business operations completely.",
-      profileImage: "https://res.cloudinary.com/demo/image/upload/v1735678123/profile1.jpg",
-      category: "business",
-      status: 'active',
-      rating: 5,
-      createdAt: '2024-01-15',
-      updatedAt: '2024-01-15'
-    },
-    {
-      _id: '2',
-      name: "Sarah Wilson",
-      message: "Outstanding support and guidance throughout our digital transformation journey.",
-      profileImage: "https://res.cloudinary.com/demo/image/upload/v1735678123/profile2.jpg",
-      category: "technology",
-      status: 'active',
-      rating: 4,
-      createdAt: '2024-01-14',
-      updatedAt: '2024-01-14'
-    },
-    {
-      _id: '3',
-      name: "Mike Johnson",
-      message: "Professional team with deep industry knowledge. Highly recommended!",
-      profileImage: "https://res.cloudinary.com/demo/image/upload/v1735678123/profile3.jpg",
-      category: "finance",
-      status: 'inactive',
-      rating: 5,
-      createdAt: '2024-01-10',
-      updatedAt: '2024-01-10'
-    }
-  ]);
+  const dispatch = useDispatch();
+  const { testimonialList, loading, error } = useSelector((state) => state.testimonials);
+  const { data: categories } = useSelector((state) => state.category);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTestimonial, setEditingTestimonial] = useState(null);
@@ -48,13 +19,22 @@ const TestimonialManagement = () => {
     statusFilter: 'all'
   });
 
+  useEffect(() => {
+    dispatch(getAllTestimonials());
+    dispatch(getMaincategory());
+  }, [dispatch]);
+
   // Filter testimonials
-  const filteredTestimonials = testimonials.filter(testimonial => {
-    const matchesSearch = testimonial.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-                         testimonial.message.toLowerCase().includes(filters.searchTerm.toLowerCase());
+  const filteredTestimonials = testimonialList.filter(testimonial => {
+    const categoryId = typeof testimonial.category === 'object' 
+      ? testimonial.category?._id 
+      : testimonial.category;
     
-    const matchesCategory = filters.categoryFilter === 'all' || testimonial.category === filters.categoryFilter;
-    const matchesStatus = filters.statusFilter === 'all' || testimonial.status === filters.statusFilter;
+    const matchesSearch = testimonial.name?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+                         testimonial.message?.toLowerCase().includes(filters.searchTerm.toLowerCase());
+    
+    const matchesCategory = filters.categoryFilter === 'all' || categoryId === filters.categoryFilter;
+    const matchesStatus = filters.statusFilter === 'all' || (testimonial.isActive ? 'active' : 'inactive') === filters.statusFilter;
     
     return matchesSearch && matchesCategory && matchesStatus;
   });
@@ -69,61 +49,82 @@ const TestimonialManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleSaveTestimonial = (testimonialData) => {
-    if (editingTestimonial) {
-      // Update existing testimonial
-      setTestimonials(prev =>
-        prev.map(testimonial =>
-          testimonial._id === editingTestimonial._id
-            ? { 
-                ...testimonialData,
-                _id: editingTestimonial._id,
-                updatedAt: new Date().toISOString().split('T')[0]
-              }
-            : testimonial
-        )
-      );
-    } else {
-      // Add new testimonial
-      const newTestimonial = {
-        ...testimonialData,
-        _id: Math.random().toString(36).substr(2, 9),
-        status: 'active',
-        createdAt: new Date().toISOString().split('T')[0],
-        updatedAt: new Date().toISOString().split('T')[0]
-      };
-      setTestimonials(prev => [...prev, newTestimonial]);
+  const handleSaveTestimonial = async (testimonialData) => {
+    try {
+      const formData = new FormData();
+      
+      // Append all fields to FormData
+      formData.append('name', testimonialData.name);
+      formData.append('message', testimonialData.message);
+      formData.append('category', testimonialData.category);
+      formData.append('isActive', testimonialData.isActive.toString());
+
+      // Append image file if it's a new file upload
+      if (testimonialData.profileImage instanceof File) {
+        formData.append('profileImage', testimonialData.profileImage);
+      } else if (typeof testimonialData.profileImage === 'string' && testimonialData.profileImage) {
+        formData.append('image', testimonialData.profileImage);
+      }
+
+      if (editingTestimonial) {
+        await dispatch(updateTestimonial({
+          id: editingTestimonial._id,
+          formData
+        })).unwrap();
+      } else {
+        await dispatch(addTestimonial(formData)).unwrap();
+      }
+      
+      setIsModalOpen(false);
+      setEditingTestimonial(null);
+    } catch (error) {
+      console.error('Failed to save testimonial:', error);
+      alert('Failed to save testimonial. Please try again.');
     }
-    setIsModalOpen(false);
-    setEditingTestimonial(null);
   };
 
-  const handleDeleteTestimonial = (id) => {
+  const handleDeleteTestimonial = async (id) => {
     if (window.confirm('Are you sure you want to delete this testimonial?')) {
-      setTestimonials(prev => prev.filter(testimonial => testimonial._id !== id));
+      try {
+        await dispatch(deleteTestimonial(id)).unwrap();
+      } catch (error) {
+        console.error('Failed to delete testimonial:', error);
+        alert('Failed to delete testimonial. Please try again.');
+      }
     }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    setTestimonials(prev =>
-      prev.map(testimonial =>
-        testimonial._id === id ? { 
-          ...testimonial, 
-          status: newStatus,
-          updatedAt: new Date().toISOString().split('T')[0]
-        } : testimonial
-      )
-    );
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const formData = new FormData();
+      formData.append('isActive', newStatus.toString());
+      
+      await dispatch(updateTestimonial({
+        id,
+        formData
+      })).unwrap();
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      alert('Failed to update status. Please try again.');
+    }
   };
 
-  const categories = [
-    { value: 'business', label: 'Business Consulting' },
-    { value: 'technology', label: 'Technology' },
-    { value: 'finance', label: 'Financial Services' },
-    { value: 'marketing', label: 'Marketing' },
-    { value: 'healthcare', label: 'Healthcare' },
-    { value: 'education', label: 'Education' }
-  ];
+  // Format categories for dropdown
+  const formattedCategories = categories?.map(cat => ({
+    value: cat._id,
+    label: cat.name
+  })) || [];
+
+  if (loading && testimonialList.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading testimonials...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -133,6 +134,12 @@ const TestimonialManagement = () => {
           <h1 className="text-2xl font-bold text-gray-900">Testimonials Management</h1>
           <p className="text-gray-600">Manage customer testimonials and reviews</p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
 
         {/* Controls */}
         <div className="bg-white rounded-lg shadow mb-6 p-4">
@@ -146,7 +153,7 @@ const TestimonialManagement = () => {
                     placeholder="Search testimonials..."
                     value={filters.searchTerm}
                     onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-black pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <svg className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -158,10 +165,10 @@ const TestimonialManagement = () => {
               <select
                 value={filters.categoryFilter}
                 onChange={(e) => setFilters(prev => ({ ...prev, categoryFilter: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-2 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Categories</option>
-                {categories.map(category => (
+                {formattedCategories.map(category => (
                   <option key={category.value} value={category.value}>
                     {category.label}
                   </option>
@@ -172,7 +179,7 @@ const TestimonialManagement = () => {
               <select
                 value={filters.statusFilter}
                 onChange={(e) => setFilters(prev => ({ ...prev, statusFilter: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 text-black py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -183,12 +190,13 @@ const TestimonialManagement = () => {
             {/* Add Testimonial Button */}
             <button
               onClick={handleAddTestimonial}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center whitespace-nowrap"
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center whitespace-nowrap disabled:opacity-50"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              Add New Testimonial
+              {loading ? 'Loading...' : 'Add New Testimonial'}
             </button>
           </div>
         </div>
@@ -199,7 +207,8 @@ const TestimonialManagement = () => {
           onEdit={handleEditTestimonial}
           onDelete={handleDeleteTestimonial}
           onStatusChange={handleStatusChange}
-          categories={categories}
+          categories={formattedCategories}
+          loading={loading}
         />
 
         {/* Modal */}
@@ -230,7 +239,8 @@ const TestimonialManagement = () => {
                     setIsModalOpen(false);
                     setEditingTestimonial(null);
                   }}
-                  categories={categories}
+                  categories={formattedCategories}
+                  loading={loading}
                 />
               </div>
             </div>

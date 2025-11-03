@@ -1,30 +1,14 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import ConsultingForm from './components/ConsultingForm';
 import ConsultingList from './components/ConsultingPreview';
+import { addHomeConsulting, deleteHomeConsulting, getHomeConsulting, updateHomeConsulting } from '@/redux/slices/homeConsultingSlice';
 
 const ConsultingManagement = () => {
-  const [consultingPages, setConsultingPages] = useState([
-    {
-      _id: '1',
-      title: "Professional Consulting Services",
-      subtitle: "Transform your business with our expert consulting",
-      bannerImage: "https://res.cloudinary.com/demo/image/upload/v1735678123/consulting-banner.webp",
-      status: 'active',
-      featured: true,
-      updatedAt: '2024-01-15'
-    },
-    {
-      _id: '2',
-      title: "Technology Consulting Solutions",
-      subtitle: "Leverage cutting-edge technology for business transformation",
-      bannerImage: "https://res.cloudinary.com/demo/image/upload/v1735678123/tech-banner.webp",
-      status: 'active',
-      featured: false,
-      updatedAt: '2024-01-14'
-    }
-  ]);
-
+  const dispatch = useDispatch();
+  const { data: consultingPages, loading, error } = useSelector((state) => state.homeConsulting);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPage, setEditingPage] = useState(null);
   const [filters, setFilters] = useState({
@@ -32,12 +16,18 @@ const ConsultingManagement = () => {
     statusFilter: 'all'
   });
 
+  // Load consulting pages on component mount
+  useEffect(() => {
+    dispatch(getHomeConsulting());
+  }, [dispatch]);
+
   // Filter pages
   const filteredPages = consultingPages.filter(page => {
-    const matchesSearch = page.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-                         page.subtitle.toLowerCase().includes(filters.searchTerm.toLowerCase());
+    const matchesSearch = page.title?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+                         page.subtitle?.toLowerCase().includes(filters.searchTerm.toLowerCase());
     
-    const matchesStatus = filters.statusFilter === 'all' || page.status === filters.statusFilter;
+    const matchesStatus = filters.statusFilter === 'all' || 
+                         (filters.statusFilter === 'active' ? page.isActive : !page.isActive);
     
     return matchesSearch && matchesStatus;
   });
@@ -52,65 +42,130 @@ const ConsultingManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleSavePage = (pageData) => {
-    if (editingPage) {
-      // Update existing page
-      setConsultingPages(prev =>
-        prev.map(page =>
-          page._id === editingPage._id
-            ? { 
-                ...pageData,
-                _id: editingPage._id,
-                updatedAt: new Date().toISOString().split('T')[0]
-              }
-            : page
-        )
-      );
-    } else {
-      // Add new page
-      const newPage = {
-        ...pageData,
-        _id: Math.random().toString(36).substr(2, 9),
-        status: 'active',
-        featured: false,
-        createdAt: new Date().toISOString().split('T')[0],
-        updatedAt: new Date().toISOString().split('T')[0]
-      };
-      setConsultingPages(prev => [...prev, newPage]);
+  const handleSavePage = async (pageData) => {
+    try {
+      const formData = new FormData();
+      
+      // Append basic fields
+      formData.append('title', pageData.title);
+      formData.append('subtitle', pageData.subtitle);
+      formData.append('isActive', true);
+      
+      // Append introduction
+      formData.append('introduction[description]', pageData.introduction.description);
+      
+      // Append banner image (if it's a file)
+      if (pageData.bannerImage instanceof File) {
+        formData.append('bannerImage', pageData.bannerImage);
+      } else if (typeof pageData.bannerImage === 'string') {
+        formData.append('bannerImage', pageData.bannerImage);
+      }
+      
+      // Append introduction image (if it's a file)
+      if (pageData.introduction.image instanceof File) {
+        formData.append('introductionImage', pageData.introduction.image);
+      } else if (typeof pageData.introduction.image === 'string') {
+        formData.append('introductionImage', pageData.introduction.image);
+      }
+      
+      // Append sections
+      pageData.sections.forEach((section, index) => {
+        formData.append(`sections[${index}][title]`, section.title);
+        formData.append(`sections[${index}][description]`, section.description);
+        if (section.image instanceof File) {
+          formData.append(`sectionImages[${index}]`, section.image);
+        } else if (typeof section.image === 'string') {
+          formData.append(`sections[${index}][image]`, section.image);
+        }
+      });
+      
+      // Append gallery images
+      pageData.gallery.forEach((item, index) => {
+        if (item.image instanceof File) {
+          formData.append(`galleryImages`, item.image);
+        } else if (typeof item.image === 'string') {
+          formData.append(`gallery[${index}][image]`, item.image);
+        }
+      });
+
+      if (editingPage) {
+        // Update existing page
+        await dispatch(updateHomeConsulting({
+          id: editingPage._id,
+          formData
+        })).unwrap();
+      } else {
+        // Add new page
+        await dispatch(addHomeConsulting(formData)).unwrap();
+      }
+      
+      setIsModalOpen(false);
+      setEditingPage(null);
+      
+      // Refresh the list
+      dispatch(getHomeConsulting());
+      
+    } catch (error) {
+      console.error('Failed to save page:', error);
+      alert('Failed to save page. Please try again.');
     }
-    setIsModalOpen(false);
-    setEditingPage(null);
   };
 
-  const handleDeletePage = (id) => {
+  const handleDeletePage = async (id) => {
     if (window.confirm('Are you sure you want to delete this consulting page?')) {
-      setConsultingPages(prev => prev.filter(page => page._id !== id));
+      try {
+        await dispatch(deleteHomeConsulting(id)).unwrap();
+        // List will automatically update due to Redux state change
+      } catch (error) {
+        console.error('Failed to delete page:', error);
+        alert('Failed to delete page. Please try again.');
+      }
     }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    setConsultingPages(prev =>
-      prev.map(page =>
-        page._id === id ? { 
-          ...page, 
-          status: newStatus,
-          updatedAt: new Date().toISOString().split('T')[0]
-        } : page
-      )
-    );
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const formData = new FormData();
+      formData.append('isActive', newStatus === 'active');
+      
+      await dispatch(updateHomeConsulting({
+        id,
+        formData
+      })).unwrap();
+      
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      alert('Failed to update status. Please try again.');
+    }
   };
 
-  const handleFeaturedToggle = (id) => {
-    setConsultingPages(prev =>
-      prev.map(page =>
-        page._id === id ? { 
-          ...page, 
-          featured: !page.featured,
-          updatedAt: new Date().toISOString().split('T')[0]
-        } : page
-      )
-    );
+  const handleFeaturedToggle = async (id) => {
+    try {
+      const page = consultingPages.find(p => p._id === id);
+      const formData = new FormData();
+      formData.append('featured', !page.featured);
+      
+      await dispatch(updateHomeConsulting({
+        id,
+        formData
+      })).unwrap();
+      
+    } catch (error) {
+      console.error('Failed to toggle featured:', error);
+      alert('Failed to update featured status. Please try again.');
+    }
   };
+
+  if (loading && consultingPages.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading consulting pages...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -121,7 +176,18 @@ const ConsultingManagement = () => {
           <p className="text-gray-600">Manage your consulting service pages and content</p>
         </div>
 
-        {/* Controls */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-red-700">{error}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Controls - Same as before */}
         <div className="bg-white rounded-lg shadow mb-6 p-4">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
@@ -157,11 +223,21 @@ const ConsultingManagement = () => {
             <button
               onClick={handleAddPage}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center whitespace-nowrap"
+              disabled={loading}
             >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Add New Page
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add New Page
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -173,6 +249,7 @@ const ConsultingManagement = () => {
           onDelete={handleDeletePage}
           onStatusChange={handleStatusChange}
           onFeaturedToggle={handleFeaturedToggle}
+          loading={loading}
         />
 
         {/* Modal */}
@@ -190,6 +267,7 @@ const ConsultingManagement = () => {
                       setEditingPage(null);
                     }}
                     className="text-gray-400 hover:text-gray-600"
+                    disabled={loading}
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -203,6 +281,7 @@ const ConsultingManagement = () => {
                     setIsModalOpen(false);
                     setEditingPage(null);
                   }}
+                  loading={loading}
                 />
               </div>
             </div>

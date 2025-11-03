@@ -1,18 +1,33 @@
 import React, { useState, useEffect } from 'react';
 
-const CarouselForm = ({ data, onSave, onCancel, categories }) => {
+const CarouselForm = ({ data, onSave, onCancel, categories, pageOptions, loading }) => {
   const [formData, setFormData] = useState({
     title: '',
     subtitle: '',
     image: '',
-    category: ''
+    category: '',
+    page: '',
+    isActive: true
   });
 
   const [imagePreview, setImagePreview] = useState('');
+  const [imageFile, setImageFile] = useState(null);
 
   useEffect(() => {
     if (data) {
-      setFormData(data);
+      // Extract category ID from category object
+      const categoryId = typeof data.category === 'object' 
+        ? data.category?._id 
+        : data.category;
+      
+      setFormData({
+        title: data.title || '',
+        subtitle: data.subtitle || '',
+        image: data.image || '',
+        category: categoryId || '',
+        page: data.page || '',
+        isActive: data.isActive !== undefined ? data.isActive : true
+      });
       setImagePreview(data.image || '');
     }
   }, [data]);
@@ -27,19 +42,20 @@ const CarouselForm = ({ data, onSave, onCancel, categories }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // For demo purposes, we'll create a blob URL
-      // In real application, you would upload to cloud storage
+      // Create preview URL
       const imageUrl = URL.createObjectURL(file);
       setImagePreview(imageUrl);
+      setImageFile(file);
       setFormData(prev => ({
         ...prev,
-        image: imageUrl
+        image: file
       }));
     }
   };
 
   const handleRemoveImage = () => {
     setImagePreview('');
+    setImageFile(null);
     setFormData(prev => ({
       ...prev,
       image: ''
@@ -50,12 +66,17 @@ const CarouselForm = ({ data, onSave, onCancel, categories }) => {
     e.preventDefault();
     
     // Basic validation
-    if (!formData.title.trim() || !formData.subtitle.trim() || !formData.category || !formData.image) {
-      alert('Please fill in all fields');
+    if (!formData.title.trim() || !formData.subtitle.trim() || !formData.image) {
+      alert('Please fill in all required fields');
       return;
     }
 
-    onSave(formData);
+    const submitData = {
+      ...formData,
+      image: imageFile || formData.image
+    };
+
+    onSave(submitData);
   };
 
   return (
@@ -69,7 +90,7 @@ const CarouselForm = ({ data, onSave, onCancel, categories }) => {
           type="text"
           value={formData.title}
           onChange={(e) => handleInputChange('title', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="Enter title"
           required
         />
@@ -80,11 +101,11 @@ const CarouselForm = ({ data, onSave, onCancel, categories }) => {
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Subtitle *
         </label>
-        <input
-          type="text"
+        <textarea
           value={formData.subtitle}
           onChange={(e) => handleInputChange('subtitle', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows={3}
+          className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="Enter subtitle"
           required
         />
@@ -93,20 +114,52 @@ const CarouselForm = ({ data, onSave, onCancel, categories }) => {
       {/* Category */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Category *
+          Category
         </label>
         <select
           value={formData.category}
           onChange={(e) => handleInputChange('category', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          required
+          className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
-          <option value="">Select a category</option>
+          <option value="">Select a category (optional)</option>
           {categories.map(category => (
             <option key={category.value} value={category.value}>
               {category.label}
             </option>
           ))}
+        </select>
+      </div>
+
+      {/* Page */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Page
+        </label>
+        <select
+          value={formData.page}
+          onChange={(e) => handleInputChange('page', e.target.value)}
+          className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+          {pageOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Status */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Status
+        </label>
+        <select
+          value={formData.isActive}
+          onChange={(e) => handleInputChange('isActive', e.target.value === 'true')}
+          className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
         </select>
       </div>
 
@@ -164,15 +217,17 @@ const CarouselForm = ({ data, onSave, onCancel, categories }) => {
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          disabled={loading}
+          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          disabled={loading}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
         >
-          {data ? 'Update' : 'Create'}
+          {loading ? 'Saving...' : (data ? 'Update' : 'Create')}
         </button>
       </div>
     </form>
