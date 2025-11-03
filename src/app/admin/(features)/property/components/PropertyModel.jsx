@@ -44,7 +44,7 @@ const PropertyModal = ({
       setFormData({
         title: property.title || '',
         description: property.description || '',
-        category: property.category || '',
+        category: property.category?._id || '',
         propertyType: property.propertyType || '',
         area: property.area || { value: '', unit: 'sqft' },
         bedrooms: property.bedrooms || '',
@@ -63,6 +63,7 @@ const PropertyModal = ({
       setImagePreviews(property.images || []);
     }
   }, [property]);
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -184,7 +185,7 @@ const PropertyModal = ({
     e.preventDefault();
     
     if (validateForm()) {
-      // Convert string numbers to actual numbers
+      // Convert string numbers to actual numbers and ensure proper formatting
       const processedData = {
         ...formData,
         area: {
@@ -195,12 +196,19 @@ const PropertyModal = ({
         bathrooms: parseInt(formData.bathrooms),
         price: {
           ...formData.price,
-          amount: parseFloat(formData.price.amount)
+          amount: parseFloat(formData.price.amount),
+          isNegotiable: false
         },
         floor: formData.floor ? parseInt(formData.floor) : undefined,
         totalFloors: formData.totalFloors ? parseInt(formData.totalFloors) : undefined,
         propertyAge: formData.propertyAge ? parseInt(formData.propertyAge) : undefined,
-        parking: formData.parking ? parseInt(formData.parking) : undefined
+        parking: formData.parking ? parseInt(formData.parking) : undefined,
+        // Ensure location fields are properly formatted
+        location: {
+          city: formData.location.city.trim(),
+          country: formData.location.country.trim(),
+          address: formData.location.address.trim()
+        }
       };
       
       onSave(processedData);
@@ -242,7 +250,7 @@ const PropertyModal = ({
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.title ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Enter property title"
@@ -262,7 +270,7 @@ const PropertyModal = ({
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={4}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.description ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Enter property description"
@@ -281,7 +289,7 @@ const PropertyModal = ({
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.category ? 'border-red-300' : 'border-gray-300'
                   }`}
                 >
@@ -306,7 +314,7 @@ const PropertyModal = ({
                   name="propertyType"
                   value={formData.propertyType}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.propertyType ? 'border-red-300' : 'border-gray-300'
                   }`}
                 >
@@ -338,7 +346,7 @@ const PropertyModal = ({
                     name="area.value"
                     value={formData.area.value}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors['area.value'] ? 'border-red-300' : 'border-gray-300'
                     }`}
                     placeholder="Area value"
@@ -355,7 +363,7 @@ const PropertyModal = ({
                     name="area.unit"
                     value={formData.area.unit}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {areaUnits.map(unit => (
                       <option key={unit.value} value={unit.value}>
@@ -377,7 +385,7 @@ const PropertyModal = ({
                     name="bedrooms"
                     value={formData.bedrooms}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.bedrooms ? 'border-red-300' : 'border-gray-300'
                     }`}
                     placeholder="Number of bedrooms"
@@ -395,7 +403,7 @@ const PropertyModal = ({
                     name="bathrooms"
                     value={formData.bathrooms}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors.bathrooms ? 'border-red-300' : 'border-gray-300'
                     }`}
                     placeholder="Number of bathrooms"
@@ -415,7 +423,7 @@ const PropertyModal = ({
                   name="furnished"
                   value={formData.furnished}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.furnished ? 'border-red-300' : 'border-gray-300'
                   }`}
                 >
@@ -442,7 +450,7 @@ const PropertyModal = ({
                     name="price.amount"
                     value={formData.price.amount}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       errors['price.amount'] ? 'border-red-300' : 'border-gray-300'
                     }`}
                     placeholder="Price amount"
@@ -459,7 +467,7 @@ const PropertyModal = ({
                     name="price.unit"
                     value={formData.price.unit}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {priceUnits.map(unit => (
                       <option key={unit.value} value={unit.value}>
@@ -485,7 +493,7 @@ const PropertyModal = ({
                   name="location.city"
                   value={formData.location.city}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors['location.city'] ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="City"
@@ -503,7 +511,7 @@ const PropertyModal = ({
                   name="location.country"
                   value={formData.location.country}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors['location.country'] ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Country"
@@ -521,7 +529,7 @@ const PropertyModal = ({
                   name="location.address"
                   value={formData.location.address}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors['location.address'] ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Full address"
@@ -546,7 +554,7 @@ const PropertyModal = ({
                   name="floor"
                   value={formData.floor}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Floor number"
                 />
               </div>
@@ -559,7 +567,7 @@ const PropertyModal = ({
                   name="totalFloors"
                   value={formData.totalFloors}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Total floors"
                 />
               </div>
@@ -572,7 +580,7 @@ const PropertyModal = ({
                   name="propertyAge"
                   value={formData.propertyAge}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Age in years"
                 />
               </div>
@@ -585,7 +593,7 @@ const PropertyModal = ({
                   name="parking"
                   value={formData.parking}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Parking spaces"
                 />
               </div>

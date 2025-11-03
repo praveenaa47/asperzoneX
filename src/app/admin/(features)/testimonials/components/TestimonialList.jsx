@@ -1,3 +1,4 @@
+import { Edit, Trash2 } from 'lucide-react';
 import React from 'react';
 
 const TestimonialList = ({ 
@@ -5,7 +6,8 @@ const TestimonialList = ({
   onEdit, 
   onDelete, 
   onStatusChange,
-  categories 
+  categories,
+  loading 
 }) => {
   const getStatusBadge = (status) => {
     const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
@@ -16,29 +18,31 @@ const TestimonialList = ({
   };
 
   const getCategoryLabel = (categoryValue) => {
-    const category = categories.find(cat => cat.value === categoryValue);
-    return category ? category.label : categoryValue;
+    // Handle both string category ID and category object
+    const categoryId = typeof categoryValue === 'object' 
+      ? categoryValue?._id 
+      : categoryValue;
+    
+    const category = categories.find(cat => cat.value === categoryId);
+    return category ? category.label : 'Unknown Category';
   };
 
   const truncateText = (text, maxLength) => {
+    if (!text) return '';
     if (text.length <= maxLength) return text;
     return text.substr(0, maxLength) + '...';
   };
 
-  const renderStars = (rating) => {
+  
+
+  if (loading) {
     return (
-      <div className="flex">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <span
-            key={star}
-            className={`text-sm ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
-          >
-            ★
-          </span>
-        ))}
+      <div className="bg-white rounded-lg shadow p-8 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-2 text-gray-600">Loading testimonials...</p>
       </div>
     );
-  };
+  }
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -53,7 +57,7 @@ const TestimonialList = ({
                 Message
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Category & Rating
+                Category 
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
@@ -67,71 +71,73 @@ const TestimonialList = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {testimonials.map((testimonial) => (
-              <tr key={testimonial._id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  <div className="flex items-center">
-                    <div className="h-12 w-12 flex-shrink-0">
-                      <img
-                        className="h-12 w-12 rounded-full object-cover"
-                        src={testimonial.profileImage}
-                        alt={testimonial.name}
-                        onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/48x48?text=Avatar';
-                        }}
-                      />
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {testimonial.name}
+            {testimonials.map((testimonial) => {
+              const status = testimonial.isActive ? 'active' : 'inactive';
+              
+              return (
+                <tr key={testimonial._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center">
+                      <div className="h-12 w-12 flex-shrink-0">
+                        <img
+                          className="h-12 w-12 rounded-full object-cover"
+                          src={testimonial.profileImage || 'https://via.placeholder.com/48x48?text=Avatar'}
+                          alt={testimonial.name}
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/48x48?text=Avatar';
+                          }}
+                        />
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {testimonial.name}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900 max-w-xs">
-                    {truncateText(testimonial.message, 100)}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">
-                    {getCategoryLabel(testimonial.category)}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {renderStars(testimonial.rating)}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <select
-                    value={testimonial.status}
-                    onChange={(e) => onStatusChange(testimonial._id, e.target.value)}
-                    className={`text-sm border-none focus:ring-0 focus:outline-none ${getStatusBadge(testimonial.status)}`}
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {testimonial.updatedAt}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => onEdit(testimonial)}
-                      className="text-blue-600 hover:text-blue-900 px-3 py-1 border border-blue-600 rounded hover:bg-blue-50"
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900 max-w-xs">
+                      {truncateText(testimonial.message, 100)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900">
+                      {getCategoryLabel(testimonial.category)}
+                    </div>
+                    
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <select
+                      value={status}
+                      onChange={(e) => onStatusChange(testimonial._id, e.target.value === 'active')}
+                      className={`text-sm border-none focus:ring-0 focus:outline-none ${getStatusBadge(status)}`}
                     >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => onDelete(testimonial._id)}
-                      className="text-red-600 hover:text-red-900 px-3 py-1 border border-red-600 rounded hover:bg-red-50"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(testimonial.updatedAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => onEdit(testimonial)}
+                        className="text-blue-600 hover:text-blue-900 px-3 py-1 border border-blue-600 rounded hover:bg-blue-50"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => onDelete(testimonial._id)}
+                        className="text-red-600 hover:text-red-900 px-3 py-1 border border-red-600 rounded hover:bg-red-50"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

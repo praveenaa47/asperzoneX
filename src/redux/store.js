@@ -3,6 +3,10 @@ import categoryReducer from "./slices/MainCategorySlice"
 import propertyReducer from "./slices/realestateProprtySlice"
 import adminAuthReducer from "./slices/adminAuthSlice"
 import carReducer from "./slices/carSlice"
+import homeConsultingReducer from "./slices/homeConsultingSlice"
+import testimonialsReducer from "./slices/TestimonialSlice"
+import carouselReducer from "./slices/carouselSlice"
+import tourPackageReducer from "./slices/tourPackageSlice"
 
 export const store = configureStore({
     reducer: {
@@ -10,5 +14,9 @@ export const store = configureStore({
         property: propertyReducer,
         adminAuth: adminAuthReducer,
         cars : carReducer,
+        homeConsulting : homeConsultingReducer,
+        testimonials : testimonialsReducer,
+        carousels : carouselReducer,
+        tourPackages : tourPackageReducer,
     }
 })
