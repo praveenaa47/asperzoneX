@@ -70,7 +70,7 @@ const ServicesSection = () => {
 
                   {/* Discover Button */}
                   <button
-                    onClick={() => router.push(`/real-estate/${service._id}`)} 
+                    onClick={() => router.push(`${service.link}/${service._id}`)} 
                     className="inline-flex items-center text-blue-600 font-semibold text-sm sm:text-base hover:text-blue-700 transition-colors group/link"
                   >
                     Discover

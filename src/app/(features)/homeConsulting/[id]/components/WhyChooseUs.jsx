@@ -15,13 +15,13 @@ export default function WhyChooseUs() {
     {
       id: 3,
       title: 'Premium Support',
-      image: 'handshake.png',
+      image: '/handshake.png',
       alt: 'Premium Support'
     },
     {
       id: 4,
       title: 'Transparent Deals',
-      image: 'self.png',
+      image: '/self.png',
       alt: 'Transparent Deals'
     }
   ];
@@ -34,7 +34,7 @@ export default function WhyChooseUs() {
         {features.map((feature) => (
           <div 
             key={feature.id} 
-            className="flex flex-col items-center text-center shadow-lg rounded-3xl "
+            className="flex flex-col items-center text-center"
           >
             <div className="mb-6 ">
               <img 

@@ -35,13 +35,17 @@ export default function SmartHomeDetails() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-white">
-        <div className="px-4 py-12 sm:px-6 lg:px-8">
+      <div className="bg-white p-12">
+        <div className="px-4 py-8 sm:px-6 lg:px-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
             Smart Modular Homes: The Future of Modern Living
           </h1>
+
+           <p className="text-center text-gray-600 mt-4 font-medium">
+            Reimagining Homeownership
+          </p>
           
           <div className="mb-12">
           <img 
@@ -49,9 +53,7 @@ export default function SmartHomeDetails() {
             alt="Modern home exterior"
             className="w-full h-64 sm:h-80 object-cover rounded-lg shadow-md"
           />
-          <p className="text-center text-gray-600 mt-4 font-medium">
-            Reimagining Homeownership
-          </p>
+         
         </div>
 
           <p className="text-gray-700 leading-relaxed mb-6">
@@ -61,8 +63,8 @@ export default function SmartHomeDetails() {
       </div>
 
       {/* Features Grid */}
-      <div className=" px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid sm:grid-cols-2 gap-6 mb-12">
+      <div className=" px-4 py-12 sm:px-6 lg:px-8 ">
+        <div className="grid sm:grid-cols-2 gap-6 mb-12 p-12">
           {features.map((feature, index) => (
             <div 
               key={index}
@@ -86,7 +88,7 @@ export default function SmartHomeDetails() {
         </div>
 
         {/* Image Banner */}
-        <div className="mb-12">
+        {/* <div className="mb-12">
           <img 
             src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=400&fit=crop" 
             alt="Modern home exterior"
@@ -95,10 +97,10 @@ export default function SmartHomeDetails() {
           <p className="text-center text-gray-600 mt-4 font-medium">
             Reimagining Homeownership
           </p>
-        </div>
+        </div> */}
 
         {/* Key Takeaways */}
-        <div className="bg-white p-8 rounded-lg shadow-sm">
+        {/* <div className="bg-white p-8 rounded-lg shadow-sm">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             Key Takeaways
           </h2>
@@ -110,10 +112,10 @@ export default function SmartHomeDetails() {
               </li>
             ))}
           </ul>
-        </div>
+        </div> */}
 
         {/* Footer Actions */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mt-8">
+        {/* <div className="bg-white rounded-lg shadow-sm p-6 mt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-6">
               <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
@@ -140,7 +142,7 @@ export default function SmartHomeDetails() {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

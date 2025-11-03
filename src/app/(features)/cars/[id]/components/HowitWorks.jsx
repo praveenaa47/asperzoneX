@@ -27,7 +27,7 @@ export default function HowItWorks() {
 
   return (
     <>
-    <div className="w-full bg-gradient-to-b from-white to-gray-50 py-16 px-4">
+    <div className="w-full bg-white py-16 px-4">
       <div className="">
         <h2 className="text-3xl sm:text-4xl font-bold text-center text-blue-900 mb-12">
           How it work

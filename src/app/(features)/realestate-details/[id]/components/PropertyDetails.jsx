@@ -1,20 +1,6 @@
 import { Home, Shield, Droplets, Sun, Warehouse, DoorOpen, Leaf, UtensilsCrossed } from 'lucide-react';
 
-export default function PropertyFeatures() {
-  const features = [
-    { icon: Home, text: 'Traditional Architecture' },
-    { icon: Shield, text: '24/7 Security' },
-    { icon: UtensilsCrossed, text: 'Wooden Ceilings' },
-    { icon: Sun, text: 'Solar Water Heater' },
-    { icon: Warehouse, text: 'Central Courtyard' },
-    { icon: Droplets, text: 'Rainwater Harvesting' },
-    { icon: UtensilsCrossed, text: 'Modern Kitchen' },
-    { icon: DoorOpen, text: 'Walk-in Closets' },
-    { icon: Droplets, text: 'Private Well' },
-    { icon: UtensilsCrossed, text: 'Modular Kitchen' },
-    { icon: Leaf, text: 'Landscaped Garden' },
-    { icon: Home, text: 'Heritage Preservation' }
-  ];
+export default function PropertyFeatures({property}) {
 
   return (
     <div className="sm:p-6 ">
@@ -25,22 +11,24 @@ export default function PropertyFeatures() {
           </h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div 
+            {property?.features?.length > 0 ? (
+              property.features.map((feature, index) => (
+                <div
                   key={index}
-                  className="flex items-center gap-3 p-4 rounded-lg  transition-colors duration-200 group"
+                  className="flex items-center gap-3 p-4 rounded-lg transition-colors duration-200 group"
                 >
-                  <div className="flex-shrink-0 w-10 h-10  rounded-full flex items-center justify-center  transition-colors duration-200">
-                    <Icon className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <span className="text-slate-700 font-medium text-sm sm:text-base">
-                    {feature.text}
+                  {/* Dot indicator */}
+                  <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
+
+                  {/* Feature text */}
+                  <span className="text-slate-700 font-medium text-sm sm:text-base capitalize">
+                    {feature}
                   </span>
                 </div>
-              );
-            })}
+              ))
+            ) : (
+              <p className="text-gray-500 text-base">No features available.</p>
+            )}
           </div>
         </div>
       </div>

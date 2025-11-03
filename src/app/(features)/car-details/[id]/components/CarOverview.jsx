@@ -1,23 +1,68 @@
+// components/CarOverview.jsx
 import React from 'react';
 import { Calendar, Fuel, Gauge, Settings, User, Key, FileText, Shield, FileCheck } from 'lucide-react';
 
-export default function CarOverview() {
+export default function CarOverview({ car }) {
   const carDetails = [
-    { icon: Calendar, label: 'Reg year', value: 'Aug 2018' },
-    { icon: Fuel, label: 'Fuel', value: 'Petrol' },
-    { icon: Gauge, label: 'KM', value: '34567' },
-    { icon: Settings, label: 'Transmission', value: 'Manual' },
-    { icon: Gauge, label: 'Engine capacity', value: '9000 cc' },
-    { icon: User, label: 'Owner', value: '1st' },
-    { icon: Calendar, label: 'Make year', value: '2017' },
-    { icon: Key, label: 'Spare key', value: 'Yes' },
-    { icon: FileText, label: 'Reg number', value: 'KL 51M6016', subLabel: '' },
-    { icon: Shield, label: 'Insurance', value: '2028' },
-    { icon: FileCheck, label: 'Insurance type', value: '3d party' }
+    { 
+      icon: Calendar, 
+      label: 'Reg year', 
+      value: car.year || 'N/A' 
+    },
+    { 
+      icon: Fuel, 
+      label: 'Fuel', 
+      value: car.fuelType || 'N/A' 
+    },
+    { 
+      icon: Gauge, 
+      label: 'KM', 
+      value: car.kmsDriven ? `${car.kmsDriven.toLocaleString()} km` : 'N/A' 
+    },
+    { 
+      icon: Settings, 
+      label: 'Transmission', 
+      value: car.transmission || 'N/A' 
+    },
+    { 
+      icon: Gauge, 
+      label: 'Seating Capacity', 
+      value: car.seatingCapacity ? `${car.seatingCapacity} seats` : 'N/A' 
+    },
+    { 
+      icon: User, 
+      label: 'Owner', 
+      value: car.ownerType ? `${car.ownerType} owner` : 'N/A' 
+    },
+    { 
+      icon: Calendar, 
+      label: 'Make year', 
+      value: car.year || 'N/A' 
+    },
+    { 
+      icon: Key, 
+      label: 'Brand', 
+      value: car.brand || 'N/A' 
+    },
+    { 
+      icon: FileText, 
+      label: 'Model', 
+      value: car.model || 'N/A' 
+    },
+    { 
+      icon: Shield, 
+      label: 'Color', 
+      value: car.color || 'N/A' 
+    },
+    { 
+      icon: FileCheck, 
+      label: 'Category', 
+      value: car.category?.name || 'N/A' 
+    }
   ];
 
   return (
-    <div className="w-full  p-6">
+    <div className="w-full p-12">
       <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-8 shadow-lg">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Car Overview</h1>
         

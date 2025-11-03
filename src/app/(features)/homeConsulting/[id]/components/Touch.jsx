@@ -2,7 +2,7 @@ import { ArrowRight } from "lucide-react";
 
 export default function Touch() {
   return (
-    <div className=" px-4 py-16 ">
+    <div className=" px-4 py-16">
       <h2 className="text-4xl font-bold text-center text-black mb-12">
         Who We Are
       </h2>
