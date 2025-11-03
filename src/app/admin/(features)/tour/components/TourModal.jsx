@@ -1,78 +1,99 @@
 import React, { useState, useEffect } from 'react';
 
-const TourModal = ({ 
-  tour, 
-  tourTypes, 
-  priceUnits, 
+const TourModal = ({
+  tour,
   includedOptions,
-  availableIcons,
-  onSave, 
-  onClose 
+  exclusionOptions,
+  onSave,
+  onClose,
+  loading
 }) => {
   const [formData, setFormData] = useState({
     title: '',
-    type: '',
-    destination: '',
-    duration: { nights: '', days: '' },
-    numberOfPersons: '',
+    subtitle: '',
+    duration: '',
     about: '',
+    destination: '',
+    numberOfPersons: '',
+    isActive: true,
+    bannerImage: '',
     keyHighlights: [],
     itinerary: [],
     includedHighlights: [],
+    exclusions: [],
     importantInfoAndPolicies: [],
-    gallery: [],
-    price: { amount: '', unit: 'per-person' }
+    gallery: []
   });
 
-  const [imagePreviews, setImagePreviews] = useState([]);
+  const [bannerPreview, setBannerPreview] = useState('');
+  const [keyHighlightPreviews, setKeyHighlightPreviews] = useState({});
+  const [galleryPreviews, setGalleryPreviews] = useState([]);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (tour) {
       setFormData({
         title: tour.title || '',
-        type: tour.type || '',
-        destination: tour.destination || '',
-        duration: tour.duration || { nights: '', days: '' },
-        numberOfPersons: tour.numberOfPersons || '',
+        subtitle: tour.subtitle || '',
+        duration: tour.duration || '',
         about: tour.about || '',
+        destination: tour.destination || '',
+        numberOfPersons: tour.numberOfPersons || '',
+        isActive: tour.isActive !== undefined ? tour.isActive : true,
+        bannerImage: tour.bannerImage || '',
         keyHighlights: tour.keyHighlights || [],
         itinerary: tour.itinerary || [],
         includedHighlights: tour.includedHighlights || [],
+        exclusions: tour.exclusions || [],
         importantInfoAndPolicies: tour.importantInfoAndPolicies || [],
-        gallery: tour.gallery || [],
-        price: tour.price || { amount: '', unit: 'per-person' }
+        gallery: tour.gallery || []
       });
-      setImagePreviews(tour.gallery || []);
+      setBannerPreview(tour.bannerImage || '');
+      setGalleryPreviews(tour.gallery || []);
+
+      // Set key highlight previews
+      const highlightPreviews = {};
+      tour.keyHighlights?.forEach((highlight, index) => {
+        highlightPreviews[index] = highlight.icon;
+      });
+      setKeyHighlightPreviews(highlightPreviews);
     }
   }, [tour]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-    
-    // Clear error when user starts typing
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
         [name]: ''
       }));
     }
+  };
+
+  // Banner Image Handling
+  const handleBannerImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setBannerPreview(imageUrl);
+      setFormData(prev => ({
+        ...prev,
+        bannerImage: file
+      }));
+    }
+  };
+
+  const handleRemoveBannerImage = () => {
+    setBannerPreview('');
+    setFormData(prev => ({
+      ...prev,
+      bannerImage: ''
+    }));
   };
 
   // Key Highlights Management
@@ -92,11 +113,27 @@ const TourModal = ({
     }));
   };
 
+  const handleKeyHighlightIconChange = (index, file) => {
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setKeyHighlightPreviews(prev => ({
+        ...prev,
+        [index]: imageUrl
+      }));
+      updateKeyHighlight(index, 'icon', file);
+    }
+  };
+
   const removeKeyHighlight = (index) => {
     setFormData(prev => ({
       ...prev,
       keyHighlights: prev.keyHighlights.filter((_, i) => i !== index)
     }));
+    setKeyHighlightPreviews(prev => {
+      const newPreviews = { ...prev };
+      delete newPreviews[index];
+      return newPreviews;
+    });
   };
 
   // Itinerary Management
@@ -157,11 +194,21 @@ const TourModal = ({
     }));
   };
 
-  // Image Management
-  const handleImageChange = (e) => {
+  // Exclusions Management
+  const handleExclusionChange = (value, checked) => {
+    setFormData(prev => ({
+      ...prev,
+      exclusions: checked
+        ? [...prev.exclusions, value]
+        : prev.exclusions.filter(item => item !== value)
+    }));
+  };
+
+  // Gallery Management
+  const handleGalleryChange = (e) => {
     const files = Array.from(e.target.files);
-    
-    if (files.length + imagePreviews.length > 10) {
+
+    if (files.length + galleryPreviews.length > 10) {
       setErrors(prev => ({
         ...prev,
         gallery: 'Maximum 10 images allowed'
@@ -193,10 +240,10 @@ const TourModal = ({
       reader.onloadend = () => {
         newImagePreviews.push(reader.result);
         if (newImagePreviews.length === files.length) {
-          setImagePreviews(prev => [...prev, ...newImagePreviews]);
+          setGalleryPreviews(prev => [...prev, ...newImagePreviews]);
           setFormData(prev => ({
             ...prev,
-            gallery: [...prev.gallery, ...newImagePreviews]
+            gallery: [...prev.gallery, ...files]
           }));
           setErrors(prev => ({
             ...prev,
@@ -208,12 +255,14 @@ const TourModal = ({
     });
   };
 
-  const handleRemoveImage = (index) => {
-    const newPreviews = imagePreviews.filter((_, i) => i !== index);
-    setImagePreviews(newPreviews);
+  const handleRemoveGalleryImage = (index) => {
+    const newPreviews = galleryPreviews.filter((_, i) => i !== index);
+    const newGallery = formData.gallery.filter((_, i) => i !== index);
+
+    setGalleryPreviews(newPreviews);
     setFormData(prev => ({
       ...prev,
-      gallery: newPreviews
+      gallery: newGallery
     }));
   };
 
@@ -221,13 +270,9 @@ const TourModal = ({
     const newErrors = {};
 
     if (!formData.title.trim()) newErrors.title = 'Title is required';
-    if (!formData.type) newErrors.type = 'Tour type is required';
-    if (!formData.destination.trim()) newErrors.destination = 'Destination is required';
-    if (!formData.duration.days) newErrors['duration.days'] = 'Days is required';
-    if (!formData.duration.nights) newErrors['duration.nights'] = 'Nights is required';
-    if (!formData.numberOfPersons) newErrors.numberOfPersons = 'Number of persons is required';
+    if (!formData.duration.trim()) newErrors.duration = 'Duration is required';
     if (!formData.about.trim()) newErrors.about = 'About description is required';
-    if (!formData.price.amount) newErrors['price.amount'] = 'Price is required';
+    if (!formData.bannerImage) newErrors.bannerImage = 'Banner image is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -235,23 +280,9 @@ const TourModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
-      // Convert string numbers to actual numbers
-      const processedData = {
-        ...formData,
-        duration: {
-          nights: parseInt(formData.duration.nights),
-          days: parseInt(formData.duration.days)
-        },
-        numberOfPersons: parseInt(formData.numberOfPersons),
-        price: {
-          ...formData.price,
-          amount: parseFloat(formData.price.amount)
-        }
-      };
-      
-      onSave(processedData);
+      onSave(formData);
     }
   };
 
@@ -279,7 +310,7 @@ const TourModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-900">Basic Information</h3>
-              
+
               {/* Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -290,181 +321,162 @@ const TourModal = ({
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.title ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="e.g., Bali Adventure Tour"
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                  placeholder="e.g., Romantic Maldives Honeymoon Package"
                 />
                 {errors.title && (
                   <p className="mt-1 text-sm text-red-600">{errors.title}</p>
                 )}
               </div>
 
-              {/* Type */}
+              {/* Subtitle */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tour Type *
+                  Subtitle
                 </label>
-                <select
-                  name="type"
-                  value={formData.type}
+                <input
+                  type="text"
+                  name="subtitle"
+                  value={formData.subtitle}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.type ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                >
-                  <option value="">Select Tour Type</option>
-                  {tourTypes.map(type => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.type && (
-                  <p className="mt-1 text-sm text-red-600">{errors.type}</p>
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Relax on pristine beaches and enjoy luxury resorts"
+                />
+              </div>
+
+              {/* Duration */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Duration *
+                </label>
+                <input
+                  type="text"
+                  name="duration"
+                  value={formData.duration}
+                  onChange={handleInputChange}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.duration ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                  placeholder="e.g., 5 Nights / 6 Days Maldives Package"
+                />
+                {errors.duration && (
+                  <p className="mt-1 text-sm text-red-600">{errors.duration}</p>
                 )}
               </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900">Additional Details</h3>
+
+
 
               {/* Destination */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Destination *
+                  Destination
                 </label>
                 <input
                   type="text"
                   name="destination"
                   value={formData.destination}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.destination ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="e.g., Bali, Indonesia"
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Maldives"
                 />
-                {errors.destination && (
-                  <p className="mt-1 text-sm text-red-600">{errors.destination}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900">Duration & Capacity</h3>
-              
-              {/* Duration */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Days *
-                  </label>
-                  <input
-                    type="number"
-                    name="duration.days"
-                    value={formData.duration.days}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors['duration.days'] ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Total days"
-                  />
-                  {errors['duration.days'] && (
-                    <p className="mt-1 text-sm text-red-600">{errors['duration.days']}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nights *
-                  </label>
-                  <input
-                    type="number"
-                    name="duration.nights"
-                    value={formData.duration.nights}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors['duration.nights'] ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Total nights"
-                  />
-                  {errors['duration.nights'] && (
-                    <p className="mt-1 text-sm text-red-600">{errors['duration.nights']}</p>
-                  )}
-                </div>
               </div>
 
               {/* Number of Persons */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Number of Persons *
+                  Number of Persons
                 </label>
                 <input
                   type="number"
                   name="numberOfPersons"
                   value={formData.numberOfPersons}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.numberOfPersons ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Maximum number of persons"
                 />
-                {errors.numberOfPersons && (
-                  <p className="mt-1 text-sm text-red-600">{errors.numberOfPersons}</p>
-                )}
               </div>
 
-              {/* Price */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price *
-                  </label>
-                  <input
-                    type="number"
-                    name="price.amount"
-                    value={formData.price.amount}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors['price.amount'] ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Price amount"
-                  />
-                  {errors['price.amount'] && (
-                    <p className="mt-1 text-sm text-red-600">{errors['price.amount']}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price Unit
-                  </label>
-                  <select
-                    name="price.unit"
-                    value={formData.price.unit}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {priceUnits.map(unit => (
-                      <option key={unit.value} value={unit.value}>
-                        {unit.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Status
+                </label>
+                <select
+                  name="isActive"
+                  value={formData.isActive}
+                  onChange={handleInputChange}
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
+                </select>
               </div>
             </div>
           </div>
 
+          {/* Banner Image */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Banner Image *</h3>
+
+            {bannerPreview && (
+              <div className="mb-3">
+                <div className="relative inline-block">
+                  <img
+                    src={bannerPreview}
+                    alt="Banner Preview"
+                    className="w-32 h-20 object-cover rounded-lg border"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveBannerImage}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-center w-full">
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <svg className="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="mb-2 text-sm text-gray-500">
+                    <span className="font-semibold">Click to upload banner image</span>
+                  </p>
+                  <p className="text-xs text-gray-500">PNG, JPG, WEBP (MAX. 5MB)</p>
+                </div>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleBannerImageChange}
+                  required={!bannerPreview}
+                />
+              </label>
+            </div>
+            {errors.bannerImage && (
+              <p className="mt-1 text-sm text-red-600">{errors.bannerImage}</p>
+            )}
+          </div>
+
           {/* About Description */}
           <div className="border-t pt-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">About the Tour</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">About the Tour *</h3>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
               <textarea
                 name="about"
                 value={formData.about}
                 onChange={handleInputChange}
                 rows={4}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.about ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.about ? 'border-red-300' : 'border-gray-300'
+                  }`}
                 placeholder="Describe the tour package in detail..."
               />
               {errors.about && (
@@ -485,25 +497,28 @@ const TourModal = ({
                 Add Highlight
               </button>
             </div>
-            
+
             {formData.keyHighlights.map((highlight, index) => (
               <div key={index} className="flex items-center gap-4 mb-4 p-4 border rounded-lg">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Icon
+                  <label className="block  text-sm font-medium text-gray-700 mb-2">
+                    Icon Image
                   </label>
-                  <select
-                    value={highlight.icon}
-                    onChange={(e) => updateKeyHighlight(index, 'icon', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-2xl"
-                  >
-                    <option value="">Select Icon</option>
-                    {availableIcons.map(icon => (
-                      <option key={icon} value={icon}>
-                        {icon} {icon}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex items-center gap-2">
+                    {keyHighlightPreviews[index] && (
+                      <img
+                        src={keyHighlightPreviews[index]}
+                        alt="Icon Preview"
+                        className="w-8 h-8 object-cover rounded"
+                      />
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleKeyHighlightIconChange(index, e.target.files[0])}
+                      className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
                 </div>
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -513,7 +528,7 @@ const TourModal = ({
                     type="text"
                     value={highlight.title}
                     onChange={(e) => updateKeyHighlight(index, 'title', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Highlight title"
                   />
                 </div>
@@ -542,7 +557,7 @@ const TourModal = ({
                 Add Day
               </button>
             </div>
-            
+
             {formData.itinerary.map((day, index) => (
               <div key={index} className="mb-4 p-4 border rounded-lg">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -554,7 +569,7 @@ const TourModal = ({
                       type="text"
                       value={day.day}
                       onChange={(e) => updateItineraryDay(index, 'day', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., Day 1"
                     />
                   </div>
@@ -566,8 +581,8 @@ const TourModal = ({
                       type="text"
                       value={day.title}
                       onChange={(e) => updateItineraryDay(index, 'title', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="e.g., Arrival in Bali"
+                      className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g., Arrival & Relaxation"
                     />
                   </div>
                   <div className="flex items-end">
@@ -589,8 +604,8 @@ const TourModal = ({
                   <textarea
                     value={day.activities}
                     onChange={(e) => updateItineraryDay(index, 'activities', e.target.value)}
-                    rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={3}
+                    className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Describe the activities for this day..."
                   />
                 </div>
@@ -616,6 +631,24 @@ const TourModal = ({
             </div>
           </div>
 
+          {/* Exclusions */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Exclusions</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {exclusionOptions.map(option => (
+                <label key={option} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.exclusions.includes(option)}
+                    onChange={(e) => handleExclusionChange(option, e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                  />
+                  <span className="text-sm text-gray-700">{option}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           {/* Important Info & Policies */}
           <div className="border-t pt-6">
             <div className="flex items-center justify-between mb-4">
@@ -628,7 +661,7 @@ const TourModal = ({
                 Add Policy
               </button>
             </div>
-            
+
             {formData.importantInfoAndPolicies.map((policy, index) => (
               <div key={index} className="mb-4 p-4 border rounded-lg">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -640,7 +673,7 @@ const TourModal = ({
                       type="text"
                       value={policy.question}
                       onChange={(e) => updatePolicy(index, 'question', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., Cancellation Policy"
                     />
                   </div>
@@ -664,7 +697,7 @@ const TourModal = ({
                     value={policy.answer}
                     onChange={(e) => updatePolicy(index, 'answer', e.target.value)}
                     rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Provide the answer or policy details..."
                   />
                 </div>
@@ -675,11 +708,11 @@ const TourModal = ({
           {/* Image Upload */}
           <div className="border-t pt-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Tour Gallery</h3>
-            
+
             {/* Image Previews */}
-            {imagePreviews.length > 0 && (
+            {galleryPreviews.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                {imagePreviews.map((preview, index) => (
+                {galleryPreviews.map((preview, index) => (
                   <div key={index} className="relative">
                     <img
                       src={preview}
@@ -688,7 +721,7 @@ const TourModal = ({
                     />
                     <button
                       type="button"
-                      onClick={() => handleRemoveImage(index)}
+                      onClick={() => handleRemoveGalleryImage(index)}
                       className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -718,7 +751,7 @@ const TourModal = ({
                   className="hidden"
                   accept="image/*"
                   multiple
-                  onChange={handleImageChange}
+                  onChange={handleGalleryChange}
                 />
               </label>
             </div>
@@ -732,15 +765,17 @@ const TourModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={loading}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={loading}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {tour ? 'Update Tour' : 'Create Tour'}
+              {loading ? 'Saving...' : (tour ? 'Update Tour' : 'Create Tour')}
             </button>
           </div>
         </form>

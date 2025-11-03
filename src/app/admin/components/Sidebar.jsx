@@ -16,6 +16,7 @@ import {
   Home,
   Users2,
   Image,
+  LetterTextIcon,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -39,6 +40,7 @@ const Sidebar = () => {
     },
     { name: "Testimonials", icon: <Users2 size={20} />, path: "/admin/testimonials" },
     { name: "Carousels", icon: <Image size={20} />, path: "/admin/carousel" },
+    { name: "Blogs", icon: <LetterTextIcon size={20} />, path: "/admin/blog" },
 
   ];
 

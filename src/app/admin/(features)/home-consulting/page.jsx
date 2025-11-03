@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ConsultingForm from './components/ConsultingForm';
-import ConsultingList from './components/ConsultingPreview';
+import ConsultingList from './components/ConsultingList';
 import { addHomeConsulting, deleteHomeConsulting, getHomeConsulting, updateHomeConsulting } from '@/redux/slices/homeConsultingSlice';
 
 const ConsultingManagement = () => {
@@ -199,7 +199,7 @@ const ConsultingManagement = () => {
                     placeholder="Search consulting pages..."
                     value={filters.searchTerm}
                     onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-black pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <svg className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -211,7 +211,7 @@ const ConsultingManagement = () => {
               <select
                 value={filters.statusFilter}
                 onChange={(e) => setFilters(prev => ({ ...prev, statusFilter: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 text-black py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
