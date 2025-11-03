@@ -1,25 +1,25 @@
 import React from 'react';
 
 const PropertyList = ({ properties, onEdit, onDelete, onStatusChange, onFeaturedToggle }) => {
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (isActive) => {
     const statusClasses = {
-      active: 'bg-green-100 text-green-800',
-      inactive: 'bg-gray-100 text-gray-800'
+      true: 'bg-green-100 text-green-800',
+      false: 'bg-gray-100 text-gray-800'
     };
     
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusClasses[status]}`}>
-        {status === 'active' ? 'Active' : 'Inactive'}
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusClasses[isActive]}`}>
+        {isActive ? 'Active' : 'Inactive'}
       </span>
     );
   };
 
-  const getFeaturedBadge = (featured) => {
+  const getFeaturedBadge = (isFeatured) => {
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-        featured ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+        isFeatured ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
       }`}>
-        {featured ? 'Featured' : 'Standard'}
+        {isFeatured ? 'Featured' : 'Standard'}
       </span>
     );
   };
@@ -104,15 +104,15 @@ const PropertyList = ({ properties, onEdit, onDelete, onStatusChange, onFeatured
                         {property.title}
                       </div>
                       <div className="text-sm text-gray-500 capitalize">
-                        {property.propertyType} • {property.categoryName}
+                        {property.propertyType} • {property.category?.name}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{property.location.city}</div>
+                  <div className="text-sm text-gray-900">{property.location?.city}</div>
                   <div className="text-sm text-gray-500 truncate max-w-xs">
-                    {property.location.address}
+                    {property.location?.address}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -120,7 +120,7 @@ const PropertyList = ({ properties, onEdit, onDelete, onStatusChange, onFeatured
                     {property.bedrooms} BD • {property.bathrooms} BA
                   </div>
                   <div className="text-sm text-gray-500">
-                    {property.area.value} {property.area.unit}
+                    {property.area?.value} {property.area?.unit}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -129,10 +129,10 @@ const PropertyList = ({ properties, onEdit, onDelete, onStatusChange, onFeatured
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(property.status)}
+                  {getStatusBadge(property.isActive)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {getFeaturedBadge(property.featured)}
+                  {getFeaturedBadge(property.isFeatured)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex items-center space-x-2">
@@ -157,16 +157,16 @@ const PropertyList = ({ properties, onEdit, onDelete, onStatusChange, onFeatured
                     <button
                       onClick={() => onFeaturedToggle(property._id)}
                       className={`${
-                        property.featured ? 'text-yellow-600' : 'text-gray-400'
+                        property.isFeatured ? 'text-yellow-600' : 'text-gray-400'
                       } hover:text-yellow-700`}
-                      title={property.featured ? 'Remove Featured' : 'Mark Featured'}
+                      title={property.isFeatured ? 'Remove Featured' : 'Mark Featured'}
                     >
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
                     </button>
                     <select
-                      value={property.status}
+                      value={property.isActive ? 'active' : 'inactive'}
                       onChange={(e) => onStatusChange(property._id, e.target.value)}
                       className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     >
