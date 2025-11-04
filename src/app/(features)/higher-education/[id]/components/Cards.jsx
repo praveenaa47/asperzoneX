@@ -1,74 +1,88 @@
-import { ArrowRight, Calendar } from 'lucide-react';
+"use client";
+import { getBlogs } from "@/redux/slices/blogSlice";
+import { ArrowRight, Calendar } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-export default function Cards() {
-  const blogs = [
-    {
-      id: 1,
-      title: 'Top 5 Tips For Buying Your First Home',
-      date: '27 Apr',
-      image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop',
-      link: '#'
-    },
-    {
-      id: 2,
-      title: 'Top 5 Tips For Buying Your First Home',
-      date: '27 Apr',
-      image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&auto=format&fit=crop',
-      link: '#'
-    },
-    {
-      id: 3,
-      title: 'Top 5 Tips For Buying Your First Home',
-      date: '27 Apr',
-      image: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&auto=format&fit=crop',
-      link: '#'
-    },
-    {
-      id: 4,
-      title: 'Top 5 Tips For Buying Your First Home',
-      date: '27 Apr',
-      image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop',
-      link: '#'
+export default function LatestBlogs() {
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const { data: blogs, loading, error } = useSelector((state) => state.blogs);
+
+  useEffect(() => {
+    if (id) {
+      dispatch(getBlogs(id));
     }
-  ];
+  }, [dispatch, id]);
+
+  if (loading) return <p className="text-center py-10">Loading blogs...</p>;
+  if (error) return <p className="text-center text-red-600 py-10">{error}</p>;
 
   return (
-    <div className=" px-4 py-8 bg-white">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {blogs.map((blog) => (
-          <div 
-            key={blog.id} 
-            className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
-          >
-            <div className="relative overflow-hidden">
-              <span className="absolute top-3 right-3 bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded flex flex-col items-center leading-tight z-10">
-                <span>{blog.date}</span>
-              </span>
-              <img 
-                src={blog.image} 
-                alt={blog.title}
-                className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
-              />
-            </div>
-            
-            <div className="p-5 relative overflow-hidden">
-              <div className="transform transition-all duration-300 group-hover:-translate-y-2">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3 line-clamp-2">
+    <div className="px-10">
+      <h2 className="text-3xl font-bold text-center text-black mb-8">
+        Latest Blog Posts
+      </h2>
+
+      {/* Mobile: Horizontal scroll, Desktop: Grid */}
+      <div className="md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-6 mb-8 flex md:flex-none overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide">
+        {blogs && blogs.length > 0 ? (
+          blogs.map((blog) => (
+            <div
+              key={blog.id}
+              className="flex-shrink-0 w-[280px] md:w-auto overflow-hidden hover:shadow-xl duration-300 snap-start"
+            >
+              <div className="relative">
+                <img
+                  src={blog.coverImage}
+                  alt={blog.title}
+                  className="w-full h-48 object-cover rounded-t-xl"
+                />
+                <span className="absolute top-3 right-3 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded">
+                  {new Date(blog.publishDate).toLocaleDateString("en-US", {
+                    day: "2-digit",
+                    month: "short",
+                  })}
+                </span>
+              </div>
+
+              <div className="p-4">
+                <h3 className="text-lg font-bold mb-2 text-black line-clamp-2">
                   {blog.title}
                 </h3>
-                
-                <a 
-                  href={blog.link}
-                  className="inline-flex items-center gap-2 text-blue-600 font-semibold hover:gap-3 transition-all duration-300"
-                >
-                 Enquire
-                  <ArrowRight className="w-4 h-4" />
-                </a>
+                <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+                  {blog.introduction}
+                </p>
+
+                <div className="flex justify-between items-center text-sm text-gray-600">
+                  <a
+                    href={`/blogs/${blog._id}`}
+                    className="text-blue-600 font-semibold flex items-center gap-1 hover:gap-2 transition-all"
+                  >
+                    Read More
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="col-span-full text-center text-gray-500">
+            No blogs found for this category.
+          </p>
+        )}
       </div>
+
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 }

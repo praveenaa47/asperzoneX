@@ -7,6 +7,7 @@ import homeConsultingReducer from "./slices/homeConsultingSlice"
 import testimonialsReducer from "./slices/TestimonialSlice"
 import carouselReducer from "./slices/carouselSlice"
 import tourPackageReducer from "./slices/tourPackageSlice"
+import blogReducer from "./slices/blogSlice"
 
 export const store = configureStore({
     reducer: {
@@ -18,5 +19,6 @@ export const store = configureStore({
         testimonials : testimonialsReducer,
         carousels : carouselReducer,
         tourPackages : tourPackageReducer,
+        blogs: blogReducer,
     }
 })

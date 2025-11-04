@@ -3,10 +3,12 @@ import axios from "axios";
 import { BASE_URL } from "../baseUrl";
 
 export const getBlogs = createAsyncThunk(
-  "blogs/getAllBlogs",
-  async (_, { rejectWithValue }) => {
+  "blogs/getBlogsByCategory",
+  async (categoryId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/blogs`);
+      const response = await axios.get(`${BASE_URL}/blogs`, {
+        params: { category: categoryId },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Failed to load blogs");
@@ -14,7 +16,7 @@ export const getBlogs = createAsyncThunk(
   }
 );
 
-export const getSingleBlogs  = createAsyncThunk(
+export const getSingleBlogs = createAsyncThunk(
   "blogs/getAllBlogs",
   async (id, { rejectWithValue }) => {
     try {
@@ -37,7 +39,7 @@ const blogSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // gellallblogs
+      // gellAllblogs
       .addCase(getBlogs.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -50,13 +52,13 @@ const blogSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
- 
-    //   getBlogsbyId
+
+      //getBlogsbyId
       .addCase(getSingleBlogs.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-       .addCase(getSingleBlogs.fulfilled, (state, action) => {
+      .addCase(getSingleBlogs.fulfilled, (state, action) => {
         state.loading = false;
         state.singleBlog = action.payload.data || null;
       })

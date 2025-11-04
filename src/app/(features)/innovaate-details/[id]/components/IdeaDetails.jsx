@@ -35,16 +35,16 @@ export default function SmartHomeDetails() {
   ];
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-white">
       {/* Hero Section */}
       <div className="bg-white p-12">
-        <div className="px-4 py-8 sm:px-6 lg:px-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+        <div className="px-4 sm:px-6 lg:px-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 text-center">
             Smart Modular Homes: The Future of Modern Living
           </h1>
 
-           <p className="text-center text-gray-600 mt-4 font-medium">
-            Reimagining Homeownership
+           <p className="text-center text-gray-600 mb-4 font-medium">
+            By James | 26 March 2026
           </p>
           
           <div className="mb-12">
@@ -56,15 +56,15 @@ export default function SmartHomeDetails() {
          
         </div>
 
-          <p className="text-gray-700 leading-relaxed mb-6">
+          <p className="text-gray-700 leading-relaxed ">
             In recent years, the concept of smart modular homes has revolutionized the way we think about housing. These innovative homes are not only cost-effective but also offer a level of flexibility and customization that traditional housing simply can't match. Whether you're looking to downsize, expand, or create a sustainable living space, smart modular homes might be the perfect solution for you. Let's dive into what makes these homes so special and why they're changing the game in modern architecture.
           </p>
         </div>
       </div>
 
       {/* Features Grid */}
-      <div className=" px-4 py-12 sm:px-6 lg:px-8 ">
-        <div className="grid sm:grid-cols-2 gap-6 mb-12 p-12">
+      <div className=" px-4  sm:px-6 lg:px-8 ">
+        <div className="grid sm:grid-cols-2 gap-6 p-12">
           {features.map((feature, index) => (
             <div 
               key={index}

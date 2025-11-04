@@ -33,10 +33,10 @@ export default function RelatedArticles() {
   ];
 
   return (
-    <div className=" px-4 py-10 bg-white">
-      <h2 className="text-3xl font-bold text-black mb-12">Related Articles</h2>
+    <div className=" px-4 bg-white">
+      <h2 className="text-3xl font-bold text-black p-12">Related Articles</h2>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-12">
         {blogs.map((blog) => (
           <div 
             key={blog.id} 
