@@ -1,3 +1,4 @@
+import { Edit, Trash2 } from 'lucide-react';
 import React from 'react';
 
 const ConsultingList = ({ 
@@ -75,44 +76,51 @@ const ConsultingList = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <select
-                    value={page.isActive ? 'active' : 'inactive'}
-                    onChange={(e) => onStatusChange(page._id, e.target.value)}
+                    value={page.isActive}
+                    onChange={(e) => onStatusChange(page._id, e.target.value === 'true')}
                     className={`text-sm border-none focus:ring-0 focus:outline-none ${getStatusBadge(page.isActive)}`}
                   >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
                   </select>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
                     onClick={() => onFeaturedToggle(page._id)}
                     className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                      page.featured ? 'bg-blue-600' : 'bg-gray-200'
+                      page.isFeatured ? 'bg-blue-600' : 'bg-gray-200'
                     }`}
+                    role="switch"
+                    aria-checked={page.isFeatured}
                   >
                     <span
                       className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        page.featured ? 'translate-x-5' : 'translate-x-0'
+                        page.isFeatured ? 'translate-x-5' : 'translate-x-0'
                       }`}
                     />
                   </button>
+                  <span className="ml-2 text-sm text-gray-500">
+                    {page.isFeatured ? 'Featured' : 'Standard'}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(page.updatedAt).toLocaleDateString()}
+                  {page.updatedAt ? new Date(page.updatedAt).toLocaleDateString() : 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex space-x-2">
                     <button
                       onClick={() => onEdit(page)}
-                      className="text-blue-600 hover:text-blue-900 px-3 py-1 border border-blue-600 rounded hover:bg-blue-50"
+                      className="text-blue-600 hover:text-blue-900 p-2 border border-blue-600 rounded hover:bg-blue-50 transition-colors"
+                      title="Edit"
                     >
-                      Edit
+                      <Edit size={16} />
                     </button>
                     <button
                       onClick={() => onDelete(page._id)}
-                      className="text-red-600 hover:text-red-900 px-3 py-1 border border-red-600 rounded hover:bg-red-50"
+                      className="text-red-600 hover:text-red-900 p-2 border border-red-600 rounded hover:bg-red-50 transition-colors"
+                      title="Delete"
                     >
-                      Delete
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </td>

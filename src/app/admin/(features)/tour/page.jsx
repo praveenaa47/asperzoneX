@@ -1,146 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import TourList from "./components/TourList";
 import TourModal from "./components/TourModal";
+import { addTourPackage, deleteTourPackage, getAllTourPackages, updateTourPackage } from "@/redux/slices/tourPackageSlice";
 
 const TourManagement = () => {
-  const [tours, setTours] = useState([
-    {
-      _id: '1',
-      title: "Bali Adventure Tour",
-      type: "group",
-      destination: "Bali, Indonesia",
-      duration: { nights: 6, days: 7 },
-      numberOfPersons: 10,
-      about: "Amazing tour package exploring the beautiful island of Bali. Experience stunning beaches, ancient temples, and vibrant culture in this 7-day adventure.",
-      keyHighlights: [
-        { icon: "🏝", title: "Beautiful Beaches" },
-        { icon: "🕌", title: "Cultural Temples" },
-        { icon: "🌋", title: "Volcano Trekking" },
-        { icon: "🛍", title: "Local Markets" }
-      ],
-      itinerary: [
-        {
-          day: "Day 1",
-          title: "Arrival in Bali",
-          activities: "Airport pickup, Hotel check-in, Welcome dinner"
-        },
-        {
-          day: "Day 2",
-          title: "Beach Exploration",
-          activities: "Kuta Beach, Surfing lessons, Sunset viewing"
-        },
-        {
-          day: "Day 3",
-          title: "Cultural Tour",
-          activities: "Besakih Temple, Traditional dance performance"
-        }
-      ],
-      includedHighlights: [
-        "Accommodation",
-        "Meals",
-        "Transport",
-        "Tour Guide",
-        "Entrance Fees"
-      ],
-      importantInfoAndPolicies: [
-        {
-          question: "Cancellation Policy",
-          answer: "Free cancellation 7 days before tour start date"
-        },
-        {
-          question: "Visa Requirements",
-          answer: "Visa on arrival available for most nationalities"
-        }
-      ],
-      gallery: [
-        'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=400',
-        'https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=400'
-      ],
-      status: 'active',
-      createdAt: '2024-01-15',
-      featured: true,
-      price: { amount: 1200, unit: 'per-person' }
-    },
-    {
-      _id: '2',
-      title: "Thailand Cultural Journey",
-      type: "private",
-      destination: "Bangkok, Thailand",
-      duration: { nights: 5, days: 6 },
-      numberOfPersons: 4,
-      about: "Discover the rich cultural heritage of Thailand with this exclusive private tour.",
-      keyHighlights: [
-        { icon: "🏯", title: "Grand Palace" },
-        { icon: "🚢", title: "Floating Markets" },
-        { icon: "🍜", title: "Street Food Tour" }
-      ],
-      itinerary: [
-        {
-          day: "Day 1",
-          title: "Bangkok Arrival",
-          activities: "Airport transfer, Hotel check-in, Orientation tour"
-        }
-      ],
-      includedHighlights: [
-        "Accommodation",
-        "Breakfast",
-        "Private Transport",
-        "English Guide"
-      ],
-      importantInfoAndPolicies: [
-        {
-          question: "Payment Policy",
-          answer: "50% advance payment required"
-        }
-      ],
-      gallery: [
-        'https://images.unsplash.com/photo-1528181304800-259b08848526?w=400'
-      ],
-      status: 'active',
-      createdAt: '2024-01-14',
-      featured: false,
-      price: { amount: 1800, unit: 'per-person' }
-    },
-    {
-      _id: '3',
-      title: "European Highlights",
-      type: "group",
-      destination: "Paris, Rome, Barcelona",
-      duration: { nights: 10, days: 11 },
-      numberOfPersons: 20,
-      about: "Explore the best of Europe with this comprehensive multi-city tour package.",
-      keyHighlights: [
-        { icon: "🗼", title: "Eiffel Tower" },
-        { icon: "🏛", title: "Colosseum" },
-        { icon: "🏰", title: "Sagrada Familia" }
-      ],
-      itinerary: [
-        {
-          day: "Day 1",
-          title: "Paris Arrival",
-          activities: "Airport pickup, City orientation, Seine River cruise"
-        }
-      ],
-      includedHighlights: [
-        "Hotels",
-        "Daily Breakfast",
-        "Inter-city Transport",
-        "Sightseeing"
-      ],
-      importantInfoAndPolicies: [
-        {
-          question: "Health Requirements",
-          answer: "COVID-19 vaccination certificate required"
-        }
-      ],
-      gallery: [],
-      status: 'inactive',
-      createdAt: '2024-01-10',
-      featured: true,
-      price: { amount: 3500, unit: 'per-person' }
-    }
-  ]);
+  const dispatch = useDispatch();
+  const { tourPackageList, loading, error } = useSelector((state) => state.tourPackages);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTour, setEditingTour] = useState(null);
@@ -151,28 +18,25 @@ const TourManagement = () => {
     destinationFilter: 'all'
   });
 
-  // Available icons for key highlights
-  const availableIcons = [
-    "🏝", "🕌", "🌋", "🛍", "🏯", "🚢", "🍜", "🗼", "🏛", "🏰",
-    "🌄", "🏞", "🚶", "🍽", "🛌", "🚗", "✈️", "🛳", "🚂", "🏊",
-    "🤿", "🚴", "🎭", "🛒", "💃", "🎵", "🎨", "📸", "❤️", "⭐"
-  ];
+  useEffect(() => {
+    dispatch(getAllTourPackages());
+  }, [dispatch]);
 
   // Filter tours based on search and filters
-  const filteredTours = tours.filter(tour => {
-    const matchesSearch = tour.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-                         tour.destination.toLowerCase().includes(filters.searchTerm.toLowerCase());
-    
-    const matchesStatus = filters.statusFilter === 'all' || tour.status === filters.statusFilter;
+  const filteredTours = tourPackageList.filter(tour => {
+    const matchesSearch = tour.title?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      tour.destination?.toLowerCase().includes(filters.searchTerm.toLowerCase());
+
+    const matchesStatus = filters.statusFilter === 'all' || (tour.isActive ? 'active' : 'inactive') === filters.statusFilter;
     const matchesType = filters.typeFilter === 'all' || tour.type === filters.typeFilter;
-    const matchesDestination = filters.destinationFilter === 'all' || 
-                              tour.destination.includes(filters.destinationFilter);
-    
+    const matchesDestination = filters.destinationFilter === 'all' ||
+      tour.destination?.includes(filters.destinationFilter);
+
     return matchesSearch && matchesStatus && matchesType && matchesDestination;
   });
 
   // Get unique destinations for filter
-  const uniqueDestinations = [...new Set(tours.map(tour => tour.destination))];
+  const uniqueDestinations = [...new Set(tourPackageList.map(tour => tour.destination).filter(Boolean))];
 
   const handleAddTour = () => {
     setEditingTour(null);
@@ -184,68 +48,157 @@ const TourManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleSaveTour = (tourData) => {
-    if (editingTour) {
-      // Update existing tour
-      setTours(prev =>
-        prev.map(tour =>
-          tour._id === editingTour._id
-            ? { ...tour, ...tourData }
-            : tour
-        )
-      );
-    } else {
-      // Add new tour
-      const newTour = {
-        ...tourData,
-        _id: Math.random().toString(36).substr(2, 9),
-        status: 'active',
-        createdAt: new Date().toISOString().split('T')[0],
-        featured: false
-      };
-      setTours(prev => [...prev, newTour]);
+  const handleSaveTour = async (tourData) => {
+    try {
+      const formData = new FormData();
+
+      // Append basic fields
+      formData.append('title', tourData.title);
+      formData.append('subtitle', tourData.subtitle || '');
+      formData.append('duration', tourData.duration);
+      formData.append('about', tourData.about);
+      formData.append('destination', tourData.destination || '');
+      formData.append('numberOfPersons', tourData.numberOfPersons?.toString() || '');
+      formData.append('isActive', tourData.isActive?.toString() || 'true');
+
+      // Append banner image
+      if (tourData.bannerImage instanceof File) {
+        formData.append('bannerImage', tourData.bannerImage);
+      } else if (typeof tourData.bannerImage === 'string' && tourData.bannerImage) {
+        formData.append('bannerImage', tourData.bannerImage);
+      }
+
+      // ✅ FIXED: Use field names that match backend expectations
+      // Append key highlights titles as JSON and icons as separate files
+      if (tourData.keyHighlights?.length > 0) {
+        formData.append('keyHighlights', JSON.stringify(tourData.keyHighlights));
+
+        // Append key highlight icons with the field name backend expects
+        tourData.keyHighlights.forEach((highlight, index) => {
+          if (highlight.icon instanceof File) {
+            formData.append('keyHighlightsIcons', highlight.icon);
+          }
+        });
+      }
+
+      // Append itinerary
+      tourData.itinerary?.forEach((day, index) => {
+        formData.append(`itinerary[${index}][day]`, day.day);
+        formData.append(`itinerary[${index}][title]`, day.title);
+        formData.append(`itinerary[${index}][activities]`, Array.isArray(day.activities) ? day.activities.join(',') : day.activities);
+      });
+
+      // Append included highlights
+      tourData.includedHighlights?.forEach((item, index) => {
+        formData.append(`includedHighlights[${index}]`, item);
+      });
+
+      // Append exclusions
+      tourData.exclusions?.forEach((item, index) => {
+        formData.append(`exclusions[${index}]`, item);
+      });
+
+      // Append policies
+      tourData.importantInfoAndPolicies?.forEach((policy, index) => {
+        formData.append(`importantInfoAndPolicies[${index}][question]`, policy.question);
+        formData.append(`importantInfoAndPolicies[${index}][answer]`, policy.answer);
+      });
+
+      // ✅ FIXED: Use field name that matches backend
+      tourData.gallery?.forEach((image) => {
+        if (image instanceof File) {
+          formData.append('gallery', image); // Changed from 'galleryImages' to 'gallery'
+        }
+      });
+
+      // Debug: Log FormData contents
+      console.log('FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value instanceof File ? `File: ${value.name}` : value);
+      }
+
+      if (editingTour) {
+        await dispatch(updateTourPackage({
+          id: editingTour._id,
+          formData
+        })).unwrap();
+      } else {
+        await dispatch(addTourPackage(formData)).unwrap();
+      }
+
+      setIsModalOpen(false);
+      setEditingTour(null);
+    } catch (error) {
+      console.error('Failed to save tour:', error);
+      alert('Failed to save tour. Please try again.');
     }
-    setIsModalOpen(false);
-    setEditingTour(null);
   };
 
-  const handleDeleteTour = (id) => {
+  const handleDeleteTour = async (id) => {
     if (window.confirm('Are you sure you want to delete this tour?')) {
-      setTours(prev => prev.filter(tour => tour._id !== id));
+      try {
+        await dispatch(deleteTourPackage(id)).unwrap();
+      } catch (error) {
+        console.error('Failed to delete tour:', error);
+        alert('Failed to delete tour. Please try again.');
+      }
     }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    setTours(prev =>
-      prev.map(tour =>
-        tour._id === id ? { ...tour, status: newStatus } : tour
-      )
-    );
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const formData = new FormData();
+      formData.append('isActive', newStatus.toString());
+
+      await dispatch(updateTourPackage({
+        id,
+        formData
+      })).unwrap();
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      alert('Failed to update status. Please try again.');
+    }
   };
 
-  const handleFeaturedToggle = (id) => {
-    setTours(prev =>
-      prev.map(tour =>
-        tour._id === id ? { ...tour, featured: !tour.featured } : tour
-      )
-    );
+  const handleFeaturedToggle = async (id) => {
+    try {
+      const tour = tourPackageList.find(t => t._id === id);
+      if (tour) {
+        const formData = new FormData();
+        formData.append('featured', (!tour.featured).toString());
+
+        await dispatch(updateTourPackage({
+          id,
+          formData
+        })).unwrap();
+      }
+    } catch (error) {
+      console.error('Failed to toggle featured:', error);
+      alert('Failed to update featured status. Please try again.');
+    }
   };
 
-  const tourTypes = [
-    { value: 'group', label: 'Group Tour' },
-    { value: 'private', label: 'Private Tour' },
-    { value: 'custom', label: 'Custom Tour' }
-  ];
-
-  const priceUnits = [
-    { value: 'per-person', label: 'Per Person' },
-    { value: 'total', label: 'Total Package' }
-  ];
 
   const includedOptions = [
     "Accommodation", "Meals", "Transport", "Tour Guide", "Entrance Fees",
     "Airport Transfer", "Insurance", "Activities", "Equipment", "Local Taxes"
   ];
+
+  const exclusionOptions = [
+    "Airfare and visa fees", "Lunch unless specified", "Personal expenses (shopping, tips, etc.)",
+    "Travel insurance", "Alcoholic beverages", "Optional activities", "Gratuities"
+  ];
+
+  if (loading && tourPackageList.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading tours...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -256,7 +209,11 @@ const TourManagement = () => {
           <p className="text-gray-600">Manage your tour packages and itineraries</p>
         </div>
 
-        
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
 
         {/* Controls */}
         <div className="bg-white rounded-lg shadow mb-6 p-4">
@@ -270,7 +227,7 @@ const TourManagement = () => {
                     placeholder="Search tours..."
                     value={filters.searchTerm}
                     onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-black pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <svg className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -282,28 +239,16 @@ const TourManagement = () => {
               <select
                 value={filters.statusFilter}
                 onChange={(e) => setFilters(prev => ({ ...prev, statusFilter: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 text-black py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
-
-              <select
-                value={filters.typeFilter}
-                onChange={(e) => setFilters(prev => ({ ...prev, typeFilter: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Types</option>
-                {tourTypes.map(type => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
-              </select>
-
               <select
                 value={filters.destinationFilter}
                 onChange={(e) => setFilters(prev => ({ ...prev, destinationFilter: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-2 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Destinations</option>
                 {uniqueDestinations.map(destination => (
@@ -315,12 +260,13 @@ const TourManagement = () => {
             {/* Add Tour Button */}
             <button
               onClick={handleAddTour}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center whitespace-nowrap"
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center whitespace-nowrap disabled:opacity-50"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              Add New Tour
+              {loading ? 'Loading...' : 'Add New Tour'}
             </button>
           </div>
         </div>
@@ -332,21 +278,21 @@ const TourManagement = () => {
           onDelete={handleDeleteTour}
           onStatusChange={handleStatusChange}
           onFeaturedToggle={handleFeaturedToggle}
+          loading={loading}
         />
 
         {/* Modal */}
         {isModalOpen && (
           <TourModal
             tour={editingTour}
-            tourTypes={tourTypes}
-            priceUnits={priceUnits}
             includedOptions={includedOptions}
-            availableIcons={availableIcons}
+            exclusionOptions={exclusionOptions}
             onSave={handleSaveTour}
             onClose={() => {
               setIsModalOpen(false);
               setEditingTour(null);
             }}
+            loading={loading}
           />
         )}
       </div>

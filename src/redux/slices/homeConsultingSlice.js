@@ -53,7 +53,7 @@ export const updateHomeConsulting = createAsyncThunk(
   async ({ id, formData }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("adminToken");
-      const response = await axios.patch(
+      const response = await axios.put(
         `${BASE_URL}/home-consulting/${id}`,
         formData,
         {
