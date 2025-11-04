@@ -1,7 +1,7 @@
 import React from 'react';
 import { Home, Zap, Leaf, Users } from 'lucide-react';
 
-export default function SmartHomeDetails() {
+export default function Details() {
   const features = [
     {
       icon: <Home className="w-6 h-6" />,
@@ -88,7 +88,7 @@ export default function SmartHomeDetails() {
         </div>
 
         {/* Image Banner */}
-        <div className="mb-12">
+        {/* <div className="mb-12">
           <img 
             src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=400&fit=crop" 
             alt="Modern home exterior"
@@ -97,10 +97,10 @@ export default function SmartHomeDetails() {
           <p className="text-center text-gray-600 mt-4 font-medium">
             Reimagining Homeownership
           </p>
-        </div>
+        </div> */}
 
         {/* Key Takeaways */}
-        <div className="bg-white p-8 rounded-lg shadow-sm">
+        {/* <div className="bg-white p-8 rounded-lg shadow-sm">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             Key Takeaways
           </h2>
@@ -112,10 +112,10 @@ export default function SmartHomeDetails() {
               </li>
             ))}
           </ul>
-        </div>
+        </div> */}
 
         {/* Footer Actions */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mt-8">
+        {/* <div className="bg-white rounded-lg shadow-sm p-6 mt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-6">
               <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
@@ -142,7 +142,7 @@ export default function SmartHomeDetails() {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

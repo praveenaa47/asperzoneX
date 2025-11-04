@@ -1,5 +1,5 @@
 "use client";
-import { getBlogs } from "@/redux/slices/blogSlice";
+import {  getCategoryBlogs } from "@/redux/slices/blogSlice";
 import { ArrowRight, Calendar } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
@@ -12,7 +12,7 @@ export default function LatestBlogs() {
 
   useEffect(() => {
     if (id) {
-      dispatch(getBlogs(id));
+      dispatch(getCategoryBlogs(id));
     }
   }, [dispatch, id]);
 

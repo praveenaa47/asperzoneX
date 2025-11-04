@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { BASE_URL } from "../baseUrl";
-
+// :white_tick: Get All Blogs
 export const getBlogs = createAsyncThunk(
   "blogs/getAllBlogs",
   async (_, { rejectWithValue }) => {
@@ -14,6 +14,21 @@ export const getBlogs = createAsyncThunk(
   }
 );
 
+export const getCategoryBlogs = createAsyncThunk(
+  "blogs/getBlogsByCategory",
+  async (categoryId, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/blogs`, {
+        params: { category: categoryId },
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to load blogs");
+    }
+  }
+);
+
+// :white_tick: Get Single Blog
 export const getSingleBlog = createAsyncThunk(
   "blogs/getSingleBlog",
   async (id, { rejectWithValue }) => {
@@ -25,7 +40,7 @@ export const getSingleBlog = createAsyncThunk(
     }
   }
 );
-
+// :white_tick: Add Blog
 export const addBlog = createAsyncThunk(
   "blogs/addBlog",
   async (formData, { rejectWithValue }) => {
@@ -43,7 +58,7 @@ export const addBlog = createAsyncThunk(
     }
   }
 );
-
+// :white_tick: Update Blog
 export const updateBlog = createAsyncThunk(
   "blogs/updateBlog",
   async ({ id, formData }, { rejectWithValue }) => {
@@ -61,7 +76,7 @@ export const updateBlog = createAsyncThunk(
     }
   }
 );
-
+// :white_tick: Delete Blog
 export const deleteBlog = createAsyncThunk(
   "blogs/deleteBlog",
   async (id, { rejectWithValue }) => {
@@ -102,6 +117,20 @@ const blogSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+
+      .addCase(getCategoryBlogs.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getCategoryBlogs.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload.data || [];
+      })
+      .addCase(getCategoryBlogs.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       // :white_tick: Get Single Blog
       .addCase(getSingleBlog.pending, (state) => {
         state.loading = true;
