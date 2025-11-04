@@ -1,39 +1,23 @@
+// components/BlogList.jsx
 import React from 'react';
 
-const TourList = ({ tours, onEdit, onDelete, onStatusChange, onFeaturedToggle, loading }) => {
-  const getStatusBadge = (isActive) => {
-    const statusClasses = {
-      true: 'bg-green-100 text-green-800',
-      false: 'bg-gray-100 text-gray-800'
-    };
-    
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusClasses[isActive]}`}>
-        {isActive ? 'Active' : 'Inactive'}
-      </span>
-    );
-  };
-
-  const getFeaturedBadge = (featured) => {
+const BlogList = ({ blogs, onEdit, onDelete, onStatusChange, onFeaturedToggle, loading }) => {
+  const getStatusBadge = (isPublished) => {
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-        featured ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+        isPublished ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
       }`}>
-        {featured ? 'Featured' : 'Standard'}
+        {isPublished ? 'Published' : 'Draft'}
       </span>
     );
   };
 
-  const getTypeBadge = (type) => {
-    const typeClasses = {
-      group: 'bg-blue-100 text-blue-800',
-      private: 'bg-purple-100 text-purple-800',
-      custom: 'bg-orange-100 text-orange-800'
-    };
-    
+  const getFeaturedBadge = (isFeatured) => {
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${typeClasses[type] || 'bg-gray-100 text-gray-800'}`}>
-        {type === 'group' ? 'Group' : type === 'private' ? 'Private' : type || 'Custom'}
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+        isFeatured ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+      }`}>
+        {isFeatured ? 'Featured' : 'Standard'}
       </span>
     );
   };
@@ -42,19 +26,19 @@ const TourList = ({ tours, onEdit, onDelete, onStatusChange, onFeaturedToggle, l
     return (
       <div className="bg-white rounded-lg shadow p-8 text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-2 text-gray-600">Loading tours...</p>
+        <p className="mt-2 text-gray-600">Loading blogs...</p>
       </div>
     );
   }
 
-  if (tours.length === 0) {
+  if (blogs.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow text-center py-12">
         <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9m0 0v12" />
         </svg>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No tours found</h3>
-        <p className="text-gray-500">Get started by adding your first tour package</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No blogs found</h3>
+        <p className="text-gray-500">Get started by creating your first blog post</p>
       </div>
     );
   }
@@ -66,13 +50,13 @@ const TourList = ({ tours, onEdit, onDelete, onStatusChange, onFeaturedToggle, l
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tour
+                Blog
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Destination & Duration
+                Category & Author
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type & Capacity
+                Read Time & Tags
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
@@ -86,59 +70,57 @@ const TourList = ({ tours, onEdit, onDelete, onStatusChange, onFeaturedToggle, l
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {tours.map((tour) => (
-              <tr key={tour._id} className="hover:bg-gray-50">
+            {blogs.map((blog) => (
+              <tr key={blog._id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-12 w-12 bg-gray-200 rounded-lg overflow-hidden">
-                      {tour.bannerImage ? (
+                      {blog.coverImage ? (
                         <img
-                          src={tour.bannerImage}
-                          alt={tour.title}
+                          src={blog.coverImage}
+                          alt={blog.title}
                           className="h-12 w-12 object-cover"
                         />
                       ) : (
                         <div className="h-12 w-12 bg-gray-300 rounded-lg flex items-center justify-center">
                           <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9m0 0v12" />
                           </svg>
                         </div>
                       )}
                     </div>
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900 max-w-xs truncate">
-                        {tour.title}
+                        {blog.title}
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {tour.subtitle}
+                      <div className="text-sm text-gray-500 max-w-xs truncate">
+                        {blog.subtitle}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{tour.destination}</div>
+                  <div className="text-sm text-gray-900">{blog.category?.name || 'Uncategorized'}</div>
                   <div className="text-sm text-gray-500">
-                    {tour.duration}
+                    {blog.author?.name || 'Unknown Author'}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="mb-2">
-                    {getTypeBadge(tour.type)}
-                  </div>
+                  <div className="text-sm text-gray-900">{blog.readTime}</div>
                   <div className="text-sm text-gray-500">
-                    {tour.numberOfPersons ? `Up to ${tour.numberOfPersons} persons` : 'Capacity not set'}
+                    {blog.tags}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(tour.isActive)}
+                  {getStatusBadge(blog.isPublished)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {getFeaturedBadge(tour.featured)}
+                  {getFeaturedBadge(blog.isFeatured)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => onEdit(tour)}
+                      onClick={() => onEdit(blog)}
                       className="text-blue-600 hover:text-blue-900"
                       title="Edit"
                     >
@@ -147,7 +129,7 @@ const TourList = ({ tours, onEdit, onDelete, onStatusChange, onFeaturedToggle, l
                       </svg>
                     </button>
                     <button
-                      onClick={() => onDelete(tour._id)}
+                      onClick={() => onDelete(blog._id)}
                       className="text-red-600 hover:text-red-900"
                       title="Delete"
                     >
@@ -156,23 +138,23 @@ const TourList = ({ tours, onEdit, onDelete, onStatusChange, onFeaturedToggle, l
                       </svg>
                     </button>
                     <button
-                      onClick={() => onFeaturedToggle(tour._id)}
+                      onClick={() => onFeaturedToggle(blog._id)}
                       className={`${
-                        tour.featured ? 'text-yellow-600' : 'text-gray-400'
+                        blog.isFeatured ? 'text-yellow-600' : 'text-gray-400'
                       } hover:text-yellow-700`}
-                      title={tour.featured ? 'Remove Featured' : 'Mark Featured'}
+                      title={blog.isFeatured ? 'Remove Featured' : 'Mark Featured'}
                     >
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
                     </button>
                     <select
-                      value={tour.isActive}
-                      onChange={(e) => onStatusChange(tour._id, e.target.value === 'true')}
-                      className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      value={blog.isPublished}
+                      onChange={(e) => onStatusChange(blog._id, e.target.value === 'true')}
+                      className="text-black text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     >
-                      <option value="true">Active</option>
-                      <option value="false">Inactive</option>
+                      <option value="true">Published</option>
+                      <option value="false">Draft</option>
                     </select>
                   </div>
                 </td>
@@ -185,4 +167,4 @@ const TourList = ({ tours, onEdit, onDelete, onStatusChange, onFeaturedToggle, l
   );
 };
 
-export default TourList;
+export default BlogList;
