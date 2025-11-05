@@ -4,19 +4,26 @@ import { useDispatch, useSelector } from 'react-redux';
 import ConsultingForm from './components/ConsultingForm';
 import ConsultingList from './components/ConsultingList';
 import { addHomeConsulting, deleteHomeConsulting, getHomeConsulting, updateHomeConsulting } from '@/redux/slices/homeConsultingSlice';
+import DeleteConfirmationModal from '../../components/DeleteModal';
+import { useToast } from '../../components/Toast';
 
 const ConsultingManagement = () => {
   const dispatch = useDispatch();
   const { data: consultingPages, loading, error } = useSelector((state) => state.homeConsulting);
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPage, setEditingPage] = useState(null);
   const [filters, setFilters] = useState({
     searchTerm: '',
     statusFilter: 'all'
   });
+  const [deleteId, setDeleteId] = useState(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+    const { addToast } = useToast();
 
-  // Load consulting pages on component mount
+
+
   useEffect(() => {
     dispatch(getHomeConsulting());
   }, [dispatch]);
@@ -24,11 +31,11 @@ const ConsultingManagement = () => {
   // Filter pages
   const filteredPages = consultingPages.filter(page => {
     const matchesSearch = page.title?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-                         page.subtitle?.toLowerCase().includes(filters.searchTerm.toLowerCase());
-    
-    const matchesStatus = filters.statusFilter === 'all' || 
-                         (filters.statusFilter === 'active' ? page.isActive : !page.isActive);
-    
+      page.subtitle?.toLowerCase().includes(filters.searchTerm.toLowerCase());
+
+    const matchesStatus = filters.statusFilter === 'all' ||
+      (filters.statusFilter === 'active' ? page.isActive : !page.isActive);
+
     return matchesSearch && matchesStatus;
   });
 
@@ -45,29 +52,29 @@ const ConsultingManagement = () => {
   const handleSavePage = async (pageData) => {
     try {
       const formData = new FormData();
-      
+
       // Append basic fields
       formData.append('title', pageData.title);
       formData.append('subtitle', pageData.subtitle);
       formData.append('isActive', true);
-      
+
       // Append introduction
       formData.append('introduction[description]', pageData.introduction.description);
-      
+
       // Append banner image (if it's a file)
       if (pageData.bannerImage instanceof File) {
         formData.append('bannerImage', pageData.bannerImage);
       } else if (typeof pageData.bannerImage === 'string') {
         formData.append('bannerImage', pageData.bannerImage);
       }
-      
+
       // Append introduction image (if it's a file)
       if (pageData.introduction.image instanceof File) {
         formData.append('introductionImage', pageData.introduction.image);
       } else if (typeof pageData.introduction.image === 'string') {
         formData.append('introductionImage', pageData.introduction.image);
       }
-      
+
       // Append sections
       pageData.sections.forEach((section, index) => {
         formData.append(`sections[${index}][title]`, section.title);
@@ -78,7 +85,7 @@ const ConsultingManagement = () => {
           formData.append(`sections[${index}][image]`, section.image);
         }
       });
-      
+
       // Append gallery images
       pageData.gallery.forEach((item, index) => {
         if (item.image instanceof File) {
@@ -94,48 +101,58 @@ const ConsultingManagement = () => {
           id: editingPage._id,
           formData
         })).unwrap();
+        addToast("success", "Consulting page updated successfully ✅");
       } else {
         // Add new page
         await dispatch(addHomeConsulting(formData)).unwrap();
+        addToast("success", "Consulting page added successfully ✅");
       }
-      
+
       setIsModalOpen(false);
       setEditingPage(null);
-      
-      // Refresh the list
+
       dispatch(getHomeConsulting());
-      
+
     } catch (error) {
       console.error('Failed to save page:', error);
-      alert('Failed to save page. Please try again.');
+      addToast("error", "Failed to save consulting page ❌");
     }
   };
 
-  const handleDeletePage = async (id) => {
-    if (window.confirm('Are you sure you want to delete this consulting page?')) {
-      try {
-        await dispatch(deleteHomeConsulting(id)).unwrap();
-        // List will automatically update due to Redux state change
-      } catch (error) {
-        console.error('Failed to delete page:', error);
-        alert('Failed to delete page. Please try again.');
-      }
+  const handleDeletePage = (id) => {
+    setDeleteId(id);
+    setIsDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      setDeleteLoading(true);
+      await dispatch(deleteHomeConsulting(deleteId)).unwrap();
+      setIsDeleteOpen(false);
+      setDeleteId(null);
+      setDeleteLoading(false);
+      addToast("success", "Consulting page deleted successfully ✅");
+    } catch (error) {
+      console.error("Failed to delete page:", error);
+      addToast("error", "Failed to delete consulting page ❌");
+      setDeleteLoading(false);
     }
   };
+
 
   const handleStatusChange = async (id, newStatus) => {
     try {
       const formData = new FormData();
       formData.append('isActive', newStatus === 'active');
-      
+
       await dispatch(updateHomeConsulting({
         id,
         formData
       })).unwrap();
-      
+      addToast("success", "Consulting page status updated successfully ✅");
     } catch (error) {
       console.error('Failed to update status:', error);
-      alert('Failed to update status. Please try again.');
+      addToast("error", "Failed to update consulting page status ❌");
     }
   };
 
@@ -144,15 +161,15 @@ const ConsultingManagement = () => {
       const page = consultingPages.find(p => p._id === id);
       const formData = new FormData();
       formData.append('featured', !page.featured);
-      
+
       await dispatch(updateHomeConsulting({
         id,
         formData
       })).unwrap();
-      
+      addToast("success", "Consulting page featured status updated successfully ✅");
     } catch (error) {
       console.error('Failed to toggle featured:', error);
-      alert('Failed to update featured status. Please try again.');
+      addToast("error", "Failed to update consulting page featured status ❌");
     }
   };
 
@@ -287,6 +304,15 @@ const ConsultingManagement = () => {
             </div>
           </div>
         )}
+        <DeleteConfirmationModal
+          isOpen={isDeleteOpen}
+          onClose={() => setIsDeleteOpen(false)}
+          onConfirm={confirmDelete}
+          loading={deleteLoading}
+          title="Delete Consulting Page"
+          message="Are you sure you want to delete this consulting page? This action cannot be undone."
+        />
+
       </div>
     </div>
   );

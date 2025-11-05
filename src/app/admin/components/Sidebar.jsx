@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -17,7 +16,10 @@ import {
   Users2,
   Image,
   LetterTextIcon,
+  Book,
+  BaggageClaimIcon,
 } from "lucide-react";
+import { FaSkyatlas } from "react-icons/fa";
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -35,7 +37,12 @@ const Sidebar = () => {
         { name: "Car", icon: <Car size={18} />, path: "/admin/car" },
         { name: "Property", icon: <Building size={18} />, path: "/admin/property" },
         { name: "Tour Package", icon: <GlobeIcon size={18} />, path: "/admin/tour" },
-        { name: "Home Consulting", icon: <Home size={18} />, path: "/admin/home-consulting" }
+        { name: "Home Consulting", icon: <Home size={18} />, path: "/admin/home-consulting" },
+        { name: "Destinations", icon: <FaSkyatlas size={18} />, path: "/admin/destination" },
+        { name: "Courses", icon: <Book size={18} />, path: "/admin/courses" },
+        { name: "Job", icon: <BaggageClaimIcon size={18} />, path: "/admin/job" },
+
+
       ],
     },
     { name: "Testimonials", icon: <Users2 size={20} />, path: "/admin/testimonials" },

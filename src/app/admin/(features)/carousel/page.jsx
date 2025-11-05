@@ -5,11 +5,15 @@ import CarouselList from './components/CarouselList';
 import CarouselForm from './components/CarouselForm';
 import { addCarousel, deleteCarousel, getAllCarousels, updateCarousel } from '@/redux/slices/carouselSlice';
 import { getMaincategory } from '@/redux/slices/MainCategorySlice';
+import DeleteConfirmationModal from '../../components/DeleteModal';
+import { useToast } from '../../components/Toast';
 
 const CarouselManagement = () => {
   const dispatch = useDispatch();
   const { carouselList, loading, error } = useSelector((state) => state.carousels);
   const { data: categories } = useSelector((state) => state.category);
+  const { addToast } = useToast();
+
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCarousel, setEditingCarousel] = useState(null);
@@ -18,6 +22,10 @@ const CarouselManagement = () => {
     categoryFilter: 'all',
     statusFilter: 'all'
   });
+  const [deleteId, setDeleteId] = useState(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
 
   useEffect(() => {
     dispatch(getAllCarousels());
@@ -26,16 +34,16 @@ const CarouselManagement = () => {
 
   // Filter carousels
   const filteredCarousels = carouselList.filter(carousel => {
-    const categoryId = typeof carousel.category === 'object' 
-      ? carousel.category?._id 
+    const categoryId = typeof carousel.category === 'object'
+      ? carousel.category?._id
       : carousel.category;
-    
+
     const matchesSearch = carousel.title?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-                         carousel.subtitle?.toLowerCase().includes(filters.searchTerm.toLowerCase());
-    
+      carousel.subtitle?.toLowerCase().includes(filters.searchTerm.toLowerCase());
+
     const matchesCategory = filters.categoryFilter === 'all' || categoryId === filters.categoryFilter;
     const matchesStatus = filters.statusFilter === 'all' || (carousel.isActive ? 'active' : 'inactive') === filters.statusFilter;
-    
+
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
@@ -52,19 +60,19 @@ const CarouselManagement = () => {
   const handleSaveCarousel = async (carouselData) => {
     try {
       const formData = new FormData();
-      
+
       // Append all fields to FormData
       formData.append('title', carouselData.title);
       formData.append('subtitle', carouselData.subtitle);
-      
+
       if (carouselData.category) {
         formData.append('category', carouselData.category);
       }
-      
+
       if (carouselData.page) {
         formData.append('page', carouselData.page);
       }
-      
+
       formData.append('isActive', carouselData.isActive.toString());
 
       // Append image file if it's a new file upload
@@ -79,41 +87,56 @@ const CarouselManagement = () => {
           id: editingCarousel._id,
           formData
         })).unwrap();
+        addToast("success", "Carousel updated successfully ✅");
+
       } else {
         await dispatch(addCarousel(formData)).unwrap();
+        addToast("success", "Carousel created successfully ✅");
+
       }
-      
+
       setIsModalOpen(false);
       setEditingCarousel(null);
     } catch (error) {
       console.error('Failed to save carousel:', error);
-      alert('Failed to save carousel. Please try again.');
+      addToast("error", "Failed to save carousel ❌");
     }
   };
 
-  const handleDeleteCarousel = async (id) => {
-    if (window.confirm('Are you sure you want to delete this carousel item?')) {
-      try {
-        await dispatch(deleteCarousel(id)).unwrap();
-      } catch (error) {
-        console.error('Failed to delete carousel:', error);
-        alert('Failed to delete carousel. Please try again.');
-      }
+  const handleDeleteCarousel = (id) => {
+    setDeleteId(id);
+    setIsDeleteOpen(true);
+  };
+  const confirmDelete = async () => {
+    try {
+      setDeleteLoading(true);
+      await dispatch(deleteCarousel(deleteId)).unwrap();
+      setIsDeleteOpen(false);
+      setDeleteId(null);
+      setDeleteLoading(false);
+      addToast("success", "Carousel deleted successfully! ✅");
+
+    } catch (error) {
+      console.error("Failed to delete carousel:", error);
+      addToast("error", "Failed to delete  ❌");
+      setDeleteLoading(false);
     }
   };
+
 
   const handleStatusChange = async (id, newStatus) => {
     try {
       const formData = new FormData();
       formData.append('isActive', newStatus.toString());
-      
+
       await dispatch(updateCarousel({
         id,
         formData
       })).unwrap();
+      addToast("success", "Carousel status updated successfully ✅");
     } catch (error) {
       console.error('Failed to update status:', error);
-      alert('Failed to update status. Please try again.');
+      addToast("error", "Failed to update carousel status ❌");
     }
   };
 
@@ -123,15 +146,16 @@ const CarouselManagement = () => {
       if (carousel) {
         const formData = new FormData();
         formData.append('featured', (!carousel.featured).toString());
-        
+
         await dispatch(updateCarousel({
           id,
           formData
         })).unwrap();
+        addToast("success", "Carousel featured status updated successfully ✅");
       }
     } catch (error) {
       console.error('Failed to toggle featured:', error);
-      alert('Failed to update featured status. Please try again.');
+      addToast("error", "Failed to update featured status ❌");
     }
   };
 
@@ -283,6 +307,15 @@ const CarouselManagement = () => {
             </div>
           </div>
         )}
+        <DeleteConfirmationModal
+          isOpen={isDeleteOpen}
+          onClose={() => setIsDeleteOpen(false)}
+          onConfirm={confirmDelete}
+          loading={deleteLoading}
+          title="Delete Carousel Item"
+          message="Are you sure you want to delete this carousel item? This action cannot be undone."
+        />
+
       </div>
     </div>
   );

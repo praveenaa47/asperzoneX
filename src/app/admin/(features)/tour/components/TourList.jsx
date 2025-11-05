@@ -169,7 +169,7 @@ const TourList = ({ tours, onEdit, onDelete, onStatusChange, onFeaturedToggle, l
                     <select
                       value={tour.isActive}
                       onChange={(e) => onStatusChange(tour._id, e.target.value === 'true')}
-                      className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="text-xs text-black border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     >
                       <option value="true">Active</option>
                       <option value="false">Inactive</option>

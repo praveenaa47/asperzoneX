@@ -35,7 +35,7 @@ export const addCar = createAsyncThunk(
     try {
       const token = localStorage.getItem("adminToken");
       const response = await axios.post(
-        `${BASE_URL}/cars`,
+        `${BASE_URL}/cars/admin`,
         formData,
         {
           headers: {
