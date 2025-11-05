@@ -5,11 +5,15 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import BlogList from "./components/BlogList";
 import BlogModal from "./components/BlogModal";
+import DeleteConfirmationModal from "../../components/DeleteModal";
+import { useToast } from "../../components/Toast";
 
 const BlogManagement = () => {
   const dispatch = useDispatch();
   const { data: blogs, loading, error } = useSelector((state) => state.blogs);
   const { data: categories } = useSelector((state) => state.category);
+  const { addToast } = useToast();
+
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBlog, setEditingBlog] = useState(null);
@@ -18,6 +22,10 @@ const BlogManagement = () => {
     statusFilter: 'all',
     categoryFilter: 'all'
   });
+  const [deleteId, setDeleteId] = useState(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
 
   useEffect(() => {
     dispatch(getBlogs());
@@ -27,14 +35,14 @@ const BlogManagement = () => {
   // Filter blogs based on search and filters
   const filteredBlogs = blogs.filter(blog => {
     const matchesSearch = blog.title?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-                         blog.subtitle?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-                         blog.tags?.toLowerCase().includes(filters.searchTerm.toLowerCase());
-    
-    const matchesStatus = filters.statusFilter === 'all' || 
-                         (blog.isPublished ? 'published' : 'draft') === filters.statusFilter;
-    const matchesCategory = filters.categoryFilter === 'all' || 
-                           blog.category?._id === filters.categoryFilter;
-    
+      blog.subtitle?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      blog.tags?.toLowerCase().includes(filters.searchTerm.toLowerCase());
+
+    const matchesStatus = filters.statusFilter === 'all' ||
+      (blog.isPublished ? 'published' : 'draft') === filters.statusFilter;
+    const matchesCategory = filters.categoryFilter === 'all' ||
+      blog.category?._id === filters.categoryFilter;
+
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
@@ -74,7 +82,7 @@ const BlogManagement = () => {
       blogData.sections?.forEach((section, index) => {
         formData.append(`sections[${index}][title]`, section.title);
         formData.append(`sections[${index}][content]`, section.content);
-        
+
         if (section.icon instanceof File) {
           formData.append(`sections[${index}][icon]`, section.icon);
         } else if (typeof section.icon === 'string' && section.icon) {
@@ -93,42 +101,54 @@ const BlogManagement = () => {
           id: editingBlog._id,
           formData
         })).unwrap();
+        addToast("success", "Blog updated successfully ✅");
       } else {
         await dispatch(addBlog(formData)).unwrap();
+        addToast("success", "Blog created successfully 🎉");
       }
-      
+
       setIsModalOpen(false);
       setEditingBlog(null);
     } catch (error) {
       console.error('Failed to save blog:', error);
-      alert('Failed to save blog. Please try again.');
+     addToast("error", "Failed to save blog ❌");
     }
   };
 
-  const handleDeleteBlog = async (id) => {
-    if (window.confirm('Are you sure you want to delete this blog?')) {
-      try {
-        await dispatch(deleteBlog(id)).unwrap();
-      } catch (error) {
-        console.error('Failed to delete blog:', error);
-        alert('Failed to delete blog. Please try again.');
-      }
+  const handleDeleteBlog = (id) => {
+    setDeleteId(id);
+    setIsDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      setDeleteLoading(true);
+      await dispatch(deleteBlog(deleteId)).unwrap();
+      setIsDeleteOpen(false);
+      setDeleteId(null);
+      setDeleteLoading(false);
+      addToast("success", "Blog deleted successfully! ✅");
+    } catch (error) {
+      console.error("Failed to delete blog:", error);
+      addToast("error", "Failed to delete blog ❌");
+      setDeleteLoading(false);
     }
   };
+
 
   const handleStatusChange = async (id, newStatus) => {
     try {
       const formData = new FormData();
       formData.append('isPublished', newStatus.toString());
-      
+
       await dispatch(updateBlog({
         id,
         formData
       })).unwrap();
+      addToast("success", "Blog status updated successfully ✅");
     } catch (error) {
       console.error('Failed to update status:', error);
-      alert('Failed to update status. Please try again.');
-    }
+      addToast("error", "Failed to update blog status ❌");}
   };
 
   const handleFeaturedToggle = async (id) => {
@@ -137,15 +157,16 @@ const BlogManagement = () => {
       if (blog) {
         const formData = new FormData();
         formData.append('isFeatured', (!blog.isFeatured).toString());
-        
+
         await dispatch(updateBlog({
           id,
           formData
         })).unwrap();
+        addToast("success", "Blog featured status updated successfully ✅");
       }
     } catch (error) {
       console.error('Failed to toggle featured:', error);
-      alert('Failed to update featured status. Please try again.');
+      addToast("error", "Failed to update featured status ❌");
     }
   };
 
@@ -257,6 +278,15 @@ const BlogManagement = () => {
             loading={loading}
           />
         )}
+        <DeleteConfirmationModal
+          isOpen={isDeleteOpen}
+          onClose={() => setIsDeleteOpen(false)}
+          onConfirm={confirmDelete}
+          loading={deleteLoading}
+          title="Delete Blog"
+          message="Are you sure you want to delete this blog post? This action cannot be undone."
+        />
+
       </div>
     </div>
   );

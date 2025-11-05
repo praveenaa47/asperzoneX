@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { BASE_URL } from "../baseUrl";
-// :white_tick: Get All Blogs
+// :white_tic: Get All Blogs
 export const getBlogs = createAsyncThunk(
   "blogs/getAllBlogs",
   async (_, { rejectWithValue }) => {

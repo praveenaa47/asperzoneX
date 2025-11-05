@@ -7,6 +7,9 @@ const CarModal = ({
   fuelTypes,
   transmissionTypes,
   ownerTypes,
+  conditions,
+  bodyTypes,
+  insuranceTypes,
   colors,
   featuresList,
   priceUnits,
@@ -22,9 +25,27 @@ const CarModal = ({
     year: new Date().getFullYear(),
     fuelType: '',
     transmission: '',
-    price: { amount: '', unit: 'total' },
+    condition: 'used',
+    bodyType: '',
+    mileage: '',
+    engineCapacity: '',
+    power: '',
+    registrationYear: '',
+    registrationNumber: '',
+    insuranceValidUntil: '',
+    insuranceType: 'comprehensive',
+    spareKeyAvailable: false,
+    price: {
+      amount: '',
+      unit: 'total',
+      isNegotiable: false,
+      rcTransferPrice: '',
+      carServicingCharges: ''
+    },
     location: {
+      address: '',
       city: '',
+      state: '',
       country: ''
     },
     kmsDriven: '',
@@ -32,6 +53,8 @@ const CarModal = ({
     seatingCapacity: '',
     ownerType: '',
     features: [],
+    additionalFeatures: [],
+    tags: [],
     images: []
   });
 
@@ -49,13 +72,36 @@ const CarModal = ({
         year: car.year || new Date().getFullYear(),
         fuelType: car.fuelType || '',
         transmission: car.transmission || '',
-        price: car.price || { amount: '', unit: 'total', isNegotiable: false },
-        location: car.location || { city: '', country: '' },
+        condition: car.condition || 'used',
+        bodyType: car.bodyType || '',
+        mileage: car.mileage || '',
+        engineCapacity: car.engineCapacity || '',
+        power: car.power || '',
+        registrationYear: car.registrationYear || '',
+        registrationNumber: car.registrationNumber || '',
+        insuranceValidUntil: car.insuranceValidUntil || '',
+        insuranceType: car.insuranceType || 'comprehensive',
+        spareKeyAvailable: car.spareKeyAvailable || false,
+        price: car.price || {
+          amount: '',
+          unit: 'total',
+          isNegotiable: false,
+          rcTransferPrice: '',
+          carServicingCharges: ''
+        },
+        location: car.location || {
+          address: '',
+          city: '',
+          state: '',
+          country: ''
+        },
         kmsDriven: car.kmsDriven || '',
         color: car.color || '',
         seatingCapacity: car.seatingCapacity || '',
         ownerType: car.ownerType || '',
         features: car.features || [],
+        additionalFeatures: car.additionalFeatures || [],
+        tags: car.tags || [],
         images: car.images || []
       });
       setImagePreviews(car.images || []);
@@ -63,7 +109,7 @@ const CarModal = ({
   }, [car]);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
 
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
@@ -71,13 +117,13 @@ const CarModal = ({
         ...prev,
         [parent]: {
           ...prev[parent],
-          [child]: value
+          [child]: type === 'checkbox' ? checked : value
         }
       }));
     } else {
       setFormData(prev => ({
         ...prev,
-        [name]: value
+        [name]: type === 'checkbox' ? checked : value
       }));
     }
 
@@ -137,7 +183,7 @@ const CarModal = ({
           setImagePreviews(prev => [...prev, ...newImagePreviews]);
           setFormData(prev => ({
             ...prev,
-            images: [...prev.images, ...newImagePreviews]
+            images: [...prev.images, ...files] // Store File objects for upload
           }));
           setErrors(prev => ({
             ...prev,
@@ -151,10 +197,12 @@ const CarModal = ({
 
   const handleRemoveImage = (index) => {
     const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    const newImages = formData.images.filter((_, i) => i !== index);
+
     setImagePreviews(newPreviews);
     setFormData(prev => ({
       ...prev,
-      images: newPreviews
+      images: newImages
     }));
   };
 
@@ -169,6 +217,8 @@ const CarModal = ({
     if (!formData.year) newErrors.year = 'Year is required';
     if (!formData.fuelType) newErrors.fuelType = 'Fuel type is required';
     if (!formData.transmission) newErrors.transmission = 'Transmission is required';
+    if (!formData.condition) newErrors.condition = 'Condition is required';
+    if (!formData.bodyType) newErrors.bodyType = 'Body type is required';
     if (!formData.price.amount) newErrors['price.amount'] = 'Price is required';
     if (!formData.location.city) newErrors['location.city'] = 'City is required';
     if (!formData.location.country) newErrors['location.country'] = 'Country is required';
@@ -176,6 +226,9 @@ const CarModal = ({
     if (!formData.color) newErrors.color = 'Color is required';
     if (!formData.seatingCapacity) newErrors.seatingCapacity = 'Seating capacity is required';
     if (!formData.ownerType) newErrors.ownerType = 'Owner type is required';
+    if (!formData.mileage) newErrors.mileage = 'Mileage is required';
+    if (!formData.engineCapacity) newErrors.engineCapacity = 'Engine capacity is required';
+    if (!formData.power) newErrors.power = 'Power is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -189,12 +242,16 @@ const CarModal = ({
       const processedData = {
         ...formData,
         year: parseInt(formData.year),
+        mileage: parseFloat(formData.mileage),
+        kmsDriven: parseInt(formData.kmsDriven),
+        seatingCapacity: parseInt(formData.seatingCapacity),
+        registrationYear: formData.registrationYear.toString(),
         price: {
           ...formData.price,
-          amount: parseFloat(formData.price.amount)
-        },
-        kmsDriven: parseInt(formData.kmsDriven),
-        seatingCapacity: parseInt(formData.seatingCapacity)
+          amount: parseFloat(formData.price.amount),
+          rcTransferPrice: parseFloat(formData.price.rcTransferPrice || '0'),
+          carServicingCharges: parseFloat(formData.price.carServicingCharges || '0')
+        }
       };
 
       onSave(processedData);
@@ -205,12 +262,21 @@ const CarModal = ({
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 30 }, (_, i) => currentYear - i);
 
+  // Generate registration year options
+  const registrationYears = Array.from({ length: 30 }, (_, i) => currentYear - i);
+
   // Generate seating capacity options
-  const seatingOptions = Array.from({ length: 8 }, (_, i) => i + 2); // 2 to 9 seats
+  const seatingOptions = Array.from({ length: 8 }, (_, i) => i + 2);
+
+  // Engine capacity options
+  const engineCapacities = [
+    '799 cc', '998 cc', '1197 cc', '1493 cc', '1598 cc',
+    '1798 cc', '1998 cc', '2198 cc', '2494 cc', '2993 cc', 'Other'
+  ];
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-lg font-semibold text-gray-900">
@@ -228,12 +294,12 @@ const CarModal = ({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Basic Information & Car Details */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Basic Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-900">Basic Information</h3>
 
-              {/* Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Car Title *
@@ -243,16 +309,12 @@ const CarModal = ({
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="e.g., Toyota Camry 2023"
                 />
-                {errors.title && (
-                  <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-                )}
+                {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
               </div>
 
-              {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description *
@@ -262,16 +324,12 @@ const CarModal = ({
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={3}
-                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.description ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.description ? 'border-red-300' : 'border-gray-300'}`}
                   placeholder="Enter car description"
                 />
-                {errors.description && (
-                  <p className="mt-1 text-sm text-red-600">{errors.description}</p>
-                )}
+                {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
               </div>
 
-              {/* Category */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Category *
@@ -280,20 +338,52 @@ const CarModal = ({
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.category ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.category ? 'border-red-300' : 'border-gray-300'}`}
                 >
                   <option value="">Select Category</option>
                   {categories.map(category => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
+                    <option key={category._id} value={category._id}>{category.name}</option>
                   ))}
-
                 </select>
-                {errors.category && (
-                  <p className="mt-1 text-sm text-red-600">{errors.category}</p>
-                )}
+                {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category}</p>}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Condition *
+                  </label>
+                  <select
+                    name="condition"
+                    value={formData.condition}
+                    onChange={handleInputChange}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.condition ? 'border-red-300' : 'border-gray-300'}`}
+                  >
+                    <option value="">Select Condition</option>
+                    {conditions.map(condition => (
+                      <option key={condition.value} value={condition.value}>{condition.label}</option>
+                    ))}
+                  </select>
+                  {errors.condition && <p className="mt-1 text-sm text-red-600">{errors.condition}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Body Type *
+                  </label>
+                  <select
+                    name="bodyType"
+                    value={formData.bodyType}
+                    onChange={handleInputChange}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.bodyType ? 'border-red-300' : 'border-gray-300'}`}
+                  >
+                    <option value="">Select Body Type</option>
+                    {bodyTypes.map(type => (
+                      <option key={type.value} value={type.value}>{type.label}</option>
+                    ))}
+                  </select>
+                  {errors.bodyType && <p className="mt-1 text-sm text-red-600">{errors.bodyType}</p>}
+                </div>
               </div>
             </div>
 
@@ -301,7 +391,6 @@ const CarModal = ({
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-900">Car Details</h3>
 
-              {/* Brand & Model */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -311,18 +400,16 @@ const CarModal = ({
                     name="brand"
                     value={formData.brand}
                     onChange={handleInputChange}
-                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.brand ? 'border-red-300' : 'border-gray-300'
-                      }`}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.brand ? 'border-red-300' : 'border-gray-300'}`}
                   >
                     <option value="">Select Brand</option>
                     {brands.map(brand => (
                       <option key={brand} value={brand}>{brand}</option>
                     ))}
                   </select>
-                  {errors.brand && (
-                    <p className="mt-1 text-sm text-red-600">{errors.brand}</p>
-                  )}
+                  {errors.brand && <p className="mt-1 text-sm text-red-600">{errors.brand}</p>}
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Model *
@@ -332,17 +419,13 @@ const CarModal = ({
                     name="model"
                     value={formData.model}
                     onChange={handleInputChange}
-                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.model ? 'border-red-300' : 'border-gray-300'
-                      }`}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.model ? 'border-red-300' : 'border-gray-300'}`}
                     placeholder="Car model"
                   />
-                  {errors.model && (
-                    <p className="mt-1 text-sm text-red-600">{errors.model}</p>
-                  )}
+                  {errors.model && <p className="mt-1 text-sm text-red-600">{errors.model}</p>}
                 </div>
               </div>
 
-              {/* Year & Color */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -352,18 +435,16 @@ const CarModal = ({
                     name="year"
                     value={formData.year}
                     onChange={handleInputChange}
-                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.year ? 'border-red-300' : 'border-gray-300'
-                      }`}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.year ? 'border-red-300' : 'border-gray-300'}`}
                   >
                     <option value="">Select Year</option>
                     {years.map(year => (
                       <option key={year} value={year}>{year}</option>
                     ))}
                   </select>
-                  {errors.year && (
-                    <p className="mt-1 text-sm text-red-600">{errors.year}</p>
-                  )}
+                  {errors.year && <p className="mt-1 text-sm text-red-600">{errors.year}</p>}
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Color *
@@ -372,21 +453,17 @@ const CarModal = ({
                     name="color"
                     value={formData.color}
                     onChange={handleInputChange}
-                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.color ? 'border-red-300' : 'border-gray-300'
-                      }`}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.color ? 'border-red-300' : 'border-gray-300'}`}
                   >
                     <option value="">Select Color</option>
                     {colors.map(color => (
                       <option key={color} value={color}>{color}</option>
                     ))}
                   </select>
-                  {errors.color && (
-                    <p className="mt-1 text-sm text-red-600">{errors.color}</p>
-                  )}
+                  {errors.color && <p className="mt-1 text-sm text-red-600">{errors.color}</p>}
                 </div>
               </div>
 
-              {/* Fuel Type & Transmission */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -396,20 +473,16 @@ const CarModal = ({
                     name="fuelType"
                     value={formData.fuelType}
                     onChange={handleInputChange}
-                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.fuelType ? 'border-red-300' : 'border-gray-300'
-                      }`}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.fuelType ? 'border-red-300' : 'border-gray-300'}`}
                   >
                     <option value="">Select Fuel Type</option>
                     {fuelTypes.map(type => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
+                      <option key={type.value} value={type.value}>{type.label}</option>
                     ))}
                   </select>
-                  {errors.fuelType && (
-                    <p className="mt-1 text-sm text-red-600">{errors.fuelType}</p>
-                  )}
+                  {errors.fuelType && <p className="mt-1 text-sm text-red-600">{errors.fuelType}</p>}
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Transmission *
@@ -418,20 +491,85 @@ const CarModal = ({
                     name="transmission"
                     value={formData.transmission}
                     onChange={handleInputChange}
-                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.transmission ? 'border-red-300' : 'border-gray-300'
-                      }`}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.transmission ? 'border-red-300' : 'border-gray-300'}`}
                   >
                     <option value="">Select Transmission</option>
                     {transmissionTypes.map(type => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
+                      <option key={type.value} value={type.value}>{type.label}</option>
                     ))}
                   </select>
-                  {errors.transmission && (
-                    <p className="mt-1 text-sm text-red-600">{errors.transmission}</p>
-                  )}
+                  {errors.transmission && <p className="mt-1 text-sm text-red-600">{errors.transmission}</p>}
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Technical Specifications */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Technical Specifications</h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mileage (kmpl) *
+                </label>
+                <input
+                  type="number"
+                  name="mileage"
+                  value={formData.mileage}
+                  onChange={handleInputChange}
+                  step="0.1"
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.mileage ? 'border-red-300' : 'border-gray-300'}`}
+                  placeholder="e.g., 18.5"
+                />
+                {errors.mileage && <p className="mt-1 text-sm text-red-600">{errors.mileage}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Engine Capacity *
+                </label>
+                <select
+                  name="engineCapacity"
+                  value={formData.engineCapacity}
+                  onChange={handleInputChange}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.engineCapacity ? 'border-red-300' : 'border-gray-300'}`}
+                >
+                  <option value="">Select Capacity</option>
+                  {engineCapacities.map(capacity => (
+                    <option key={capacity} value={capacity}>{capacity}</option>
+                  ))}
+                </select>
+                {errors.engineCapacity && <p className="mt-1 text-sm text-red-600">{errors.engineCapacity}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Power (bhp) *
+                </label>
+                <input
+                  type="text"
+                  name="power"
+                  value={formData.power}
+                  onChange={handleInputChange}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.power ? 'border-red-300' : 'border-gray-300'}`}
+                  placeholder="e.g., 113 bhp"
+                />
+                {errors.power && <p className="mt-1 text-sm text-red-600">{errors.power}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  KMs Driven *
+                </label>
+                <input
+                  type="number"
+                  name="kmsDriven"
+                  value={formData.kmsDriven}
+                  onChange={handleInputChange}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.kmsDriven ? 'border-red-300' : 'border-gray-300'}`}
+                  placeholder="Kilometers driven"
+                />
+                {errors.kmsDriven && <p className="mt-1 text-sm text-red-600">{errors.kmsDriven}</p>}
               </div>
             </div>
           </div>
@@ -442,41 +580,22 @@ const CarModal = ({
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  KMs Driven *
-                </label>
-                <input
-                  type="number"
-                  name="kmsDriven"
-                  value={formData.kmsDriven}
-                  onChange={handleInputChange}
-                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.kmsDriven ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                  placeholder="Kilometers driven"
-                />
-                {errors.kmsDriven && (
-                  <p className="mt-1 text-sm text-red-600">{errors.kmsDriven}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Seating Capacity *
                 </label>
                 <select
                   name="seatingCapacity"
                   value={formData.seatingCapacity}
                   onChange={handleInputChange}
-                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.seatingCapacity ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.seatingCapacity ? 'border-red-300' : 'border-gray-300'}`}
                 >
                   <option value="">Select Capacity</option>
                   {seatingOptions.map(seats => (
                     <option key={seats} value={seats}>{seats} Seats</option>
                   ))}
                 </select>
-                {errors.seatingCapacity && (
-                  <p className="mt-1 text-sm text-red-600">{errors.seatingCapacity}</p>
-                )}
+                {errors.seatingCapacity && <p className="mt-1 text-sm text-red-600">{errors.seatingCapacity}</p>}
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Owner Type *
@@ -485,63 +604,173 @@ const CarModal = ({
                   name="ownerType"
                   value={formData.ownerType}
                   onChange={handleInputChange}
-                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.ownerType ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.ownerType ? 'border-red-300' : 'border-gray-300'}`}
                 >
                   <option value="">Select Owner Type</option>
                   {ownerTypes.map(type => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
+                    <option key={type.value} value={type.value}>{type.label}</option>
                   ))}
                 </select>
-                {errors.ownerType && (
-                  <p className="mt-1 text-sm text-red-600">{errors.ownerType}</p>
-                )}
+                {errors.ownerType && <p className="mt-1 text-sm text-red-600">{errors.ownerType}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Registration Year
+                </label>
+                <select
+                  name="registrationYear"
+                  value={formData.registrationYear}
+                  onChange={handleInputChange}
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Year</option>
+                  {registrationYears.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Registration Number
+                </label>
+                <input
+                  type="text"
+                  name="registrationNumber"
+                  value={formData.registrationNumber}
+                  onChange={handleInputChange}
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., TN09AB1234"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Insurance Details */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Insurance Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Insurance Valid Until
+                </label>
+                <input
+                  type="month"
+                  name="insuranceValidUntil"
+                  value={formData.insuranceValidUntil}
+                  onChange={handleInputChange}
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Insurance Type
+                </label>
+                <select
+                  name="insuranceType"
+                  value={formData.insuranceType}
+                  onChange={handleInputChange}
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Insurance Type</option>
+                  {insuranceTypes.map(type => (
+                    <option key={type.value} value={type.value}>{type.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="spareKeyAvailable"
+                  checked={formData.spareKeyAvailable}
+                  onChange={handleInputChange}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                />
+                <label className="text-sm text-gray-700">Spare Key Available</label>
               </div>
             </div>
           </div>
 
           {/* Price & Location */}
           <div className="border-t pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Price */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Price Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Price *
-                    </label>
-                    <input
-                      type="number"
-                      name="price.amount"
-                      value={formData.price.amount}
-                      onChange={handleInputChange}
-                      className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors['price.amount'] ? 'border-red-300' : 'border-gray-300'
-                        }`}
-                      placeholder="Price amount"
-                    />
-                    {errors['price.amount'] && (
-                      <p className="mt-1 text-sm text-red-600">{errors['price.amount']}</p>
-                    )}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Base Price *
+                      </label>
+                      <input
+                        type="number"
+                        name="price.amount"
+                        value={formData.price.amount}
+                        onChange={handleInputChange}
+                        className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors['price.amount'] ? 'border-red-300' : 'border-gray-300'}`}
+                        placeholder="Price amount"
+                      />
+                      {errors['price.amount'] && <p className="mt-1 text-sm text-red-600">{errors['price.amount']}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Price Unit
+                      </label>
+                      <select
+                        name="price.unit"
+                        value={formData.price.unit}
+                        onChange={handleInputChange}
+                        className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        {priceUnits.map(unit => (
+                          <option key={unit.value} value={unit.value}>{unit.label}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Price Unit
-                    </label>
-                    <select
-                      name="price.unit"
-                      value={formData.price.unit}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        RC Transfer Price
+                      </label>
+                      <input
+                        type="number"
+                        name="price.rcTransferPrice"
+                        value={formData.price.rcTransferPrice}
+                        onChange={handleInputChange}
+                        className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="RC transfer charges"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Servicing Charges
+                      </label>
+                      <input
+                        type="number"
+                        name="price.carServicingCharges"
+                        value={formData.price.carServicingCharges}
+                        onChange={handleInputChange}
+                        className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Servicing charges"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="price.isNegotiable"
+                      checked={formData.price.isNegotiable}
                       onChange={handleInputChange}
-                      className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      {priceUnits.map(unit => (
-                        <option key={unit.value} value={unit.value}>
-                          {unit.label}
-                        </option>
-                      ))}
-                    </select>
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                    />
+                    <label className="text-sm text-gray-700">Price is Negotiable</label>
                   </div>
                 </div>
               </div>
@@ -552,20 +781,45 @@ const CarModal = ({
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      City *
+                      Address
                     </label>
                     <input
                       type="text"
-                      name="location.city"
-                      value={formData.location.city}
+                      name="location.address"
+                      value={formData.location.address}
                       onChange={handleInputChange}
-                      className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors['location.city'] ? 'border-red-300' : 'border-gray-300'
-                        }`}
-                      placeholder="City"
+                      className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Full address"
                     />
-                    {errors['location.city'] && (
-                      <p className="mt-1 text-sm text-red-600">{errors['location.city']}</p>
-                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        City *
+                      </label>
+                      <input
+                        type="text"
+                        name="location.city"
+                        value={formData.location.city}
+                        onChange={handleInputChange}
+                        className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors['location.city'] ? 'border-red-300' : 'border-gray-300'}`}
+                        placeholder="City"
+                      />
+                      {errors['location.city'] && <p className="mt-1 text-sm text-red-600">{errors['location.city']}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        State
+                      </label>
+                      <input
+                        type="text"
+                        name="location.state"
+                        value={formData.location.state}
+                        onChange={handleInputChange}
+                        className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="State"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -576,13 +830,10 @@ const CarModal = ({
                       name="location.country"
                       value={formData.location.country}
                       onChange={handleInputChange}
-                      className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors['location.country'] ? 'border-red-300' : 'border-gray-300'
-                        }`}
+                      className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors['location.country'] ? 'border-red-300' : 'border-gray-300'}`}
                       placeholder="Country"
                     />
-                    {errors['location.country'] && (
-                      <p className="mt-1 text-sm text-red-600">{errors['location.country']}</p>
-                    )}
+                    {errors['location.country'] && <p className="mt-1 text-sm text-red-600">{errors['location.country']}</p>}
                   </div>
                 </div>
               </div>
@@ -606,6 +857,87 @@ const CarModal = ({
               ))}
             </div>
           </div>
+          {/* Tags */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Tags</h3>
+
+            <div className="space-y-3">
+              {/* Selected Tags Display */}
+              <div className="flex flex-wrap gap-2">
+                {formData.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs flex items-center gap-1"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      className="text-red-600"
+                      onClick={() =>
+                        setFormData(prev => ({
+                          ...prev,
+                          tags: prev.tags.filter((_, i) => i !== index),
+                        }))
+                      }
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))}
+              </div>
+
+              {/* Input Box */}
+              <input
+                type="text"
+                placeholder="Press Enter to add a tag"
+                className="w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && e.target.value.trim()) {
+                    e.preventDefault();
+                    setFormData(prev => ({
+                      ...prev,
+                      tags: [...prev.tags, e.target.value.trim().toLowerCase()],
+                    }));
+                    e.target.value = "";
+                  }
+                }}
+              />
+            </div>
+          </div>
+          {/* Additional Features */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Features</h3>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {[
+                "Sunroof",
+                "Apple CarPlay",
+                "Android Auto",
+                "360 Camera",
+                "Premium Sound",
+                "Cruise Control",
+                "Keyless Entry",
+                "Blind Spot Detection",
+                "Wireless Charger",
+                "Heated Seats",
+                "Ventilated Seats",
+                "Heads-Up Display",
+              ].map(feature => (
+                <label key={feature} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.additionalFeatures.includes(feature)}
+                    onChange={(e) =>
+                      handleArrayChange("additionalFeatures", feature, e.target.checked)
+                    }
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                  />
+                  <span className="text-sm text-gray-700">{feature}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
 
           {/* Image Upload */}
           <div className="border-t pt-6">
@@ -657,9 +989,7 @@ const CarModal = ({
                 />
               </label>
             </div>
-            {errors.images && (
-              <p className="mt-1 text-sm text-red-600">{errors.images}</p>
-            )}
+            {errors.images && <p className="mt-1 text-sm text-red-600">{errors.images}</p>}
           </div>
 
           {/* Actions */}

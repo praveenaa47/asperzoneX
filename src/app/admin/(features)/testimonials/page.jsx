@@ -5,6 +5,8 @@ import TestimonialList from './components/TestimonialList';
 import TestimonialForm from './components/TestimonialForm';
 import { addTestimonial, deleteTestimonial, getAllTestimonials, updateTestimonial } from '@/redux/slices/TestimonialSlice';
 import { getMaincategory } from '@/redux/slices/MainCategorySlice';
+import DeleteConfirmationModal from '../../components/DeleteModal';
+import { useToast } from '../../components/Toast';
 
 const TestimonialManagement = () => {
   const dispatch = useDispatch();
@@ -18,6 +20,11 @@ const TestimonialManagement = () => {
     categoryFilter: 'all',
     statusFilter: 'all'
   });
+  const [deleteId, setDeleteId] = useState(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const { addToast } = useToast();
+
 
   useEffect(() => {
     dispatch(getAllTestimonials());
@@ -26,16 +33,16 @@ const TestimonialManagement = () => {
 
   // Filter testimonials
   const filteredTestimonials = testimonialList.filter(testimonial => {
-    const categoryId = typeof testimonial.category === 'object' 
-      ? testimonial.category?._id 
+    const categoryId = typeof testimonial.category === 'object'
+      ? testimonial.category?._id
       : testimonial.category;
-    
+
     const matchesSearch = testimonial.name?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-                         testimonial.message?.toLowerCase().includes(filters.searchTerm.toLowerCase());
-    
+      testimonial.message?.toLowerCase().includes(filters.searchTerm.toLowerCase());
+
     const matchesCategory = filters.categoryFilter === 'all' || categoryId === filters.categoryFilter;
     const matchesStatus = filters.statusFilter === 'all' || (testimonial.isActive ? 'active' : 'inactive') === filters.statusFilter;
-    
+
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
@@ -52,7 +59,7 @@ const TestimonialManagement = () => {
   const handleSaveTestimonial = async (testimonialData) => {
     try {
       const formData = new FormData();
-      
+
       // Append all fields to FormData
       formData.append('name', testimonialData.name);
       formData.append('message', testimonialData.message);
@@ -71,41 +78,54 @@ const TestimonialManagement = () => {
           id: editingTestimonial._id,
           formData
         })).unwrap();
+        addToast("success", "Testimonial updated successfully ✅");
       } else {
         await dispatch(addTestimonial(formData)).unwrap();
+        addToast("success", "Testimonial added successfully ✅");
       }
-      
+
       setIsModalOpen(false);
       setEditingTestimonial(null);
     } catch (error) {
       console.error('Failed to save testimonial:', error);
-      alert('Failed to save testimonial. Please try again.');
+      addToast("error", "Failed to save testimonial ❌");
     }
   };
 
-  const handleDeleteTestimonial = async (id) => {
-    if (window.confirm('Are you sure you want to delete this testimonial?')) {
-      try {
-        await dispatch(deleteTestimonial(id)).unwrap();
-      } catch (error) {
-        console.error('Failed to delete testimonial:', error);
-        alert('Failed to delete testimonial. Please try again.');
-      }
-    }
-  };
+  const handleDeleteTestimonial = (id) => {
+  setDeleteId(id);
+  setIsDeleteOpen(true);
+};
+
+const confirmDelete = async () => {
+  try {
+    setDeleteLoading(true);
+    await dispatch(deleteTestimonial(deleteId)).unwrap();
+    setIsDeleteOpen(false);
+    setDeleteId(null);
+    setDeleteLoading(false);
+    addToast("success", "Testimonial deleted successfully ✅");
+  } catch (error) {
+    console.error("Failed to delete testimonial:", error);
+    addToast("error", "Failed to delete testimonial ❌");
+    setDeleteLoading(false);
+  }
+};
+
 
   const handleStatusChange = async (id, newStatus) => {
     try {
       const formData = new FormData();
       formData.append('isActive', newStatus.toString());
-      
+
       await dispatch(updateTestimonial({
         id,
         formData
       })).unwrap();
+      addToast("success", "Testimonial status updated successfully ✅");
     } catch (error) {
       console.error('Failed to update status:', error);
-      alert('Failed to update status. Please try again.');
+      addToast("error", "Failed to update testimonial status ❌");
     }
   };
 
@@ -246,6 +266,15 @@ const TestimonialManagement = () => {
             </div>
           </div>
         )}
+        <DeleteConfirmationModal
+  isOpen={isDeleteOpen}
+  onClose={() => setIsDeleteOpen(false)}
+  onConfirm={confirmDelete}
+  loading={deleteLoading}
+  title="Delete Testimonial"
+  message="Are you sure you want to delete this testimonial? This action cannot be undone."
+/>
+
       </div>
     </div>
   );

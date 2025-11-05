@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import TourList from "./components/TourList";
 import TourModal from "./components/TourModal";
 import { addTourPackage, deleteTourPackage, getAllTourPackages, updateTourPackage } from "@/redux/slices/tourPackageSlice";
+import DeleteConfirmationModal from "../../components/DeleteModal";
+import { useToast } from "../../components/Toast";
 
 const TourManagement = () => {
   const dispatch = useDispatch();
@@ -17,12 +19,15 @@ const TourManagement = () => {
     typeFilter: 'all',
     destinationFilter: 'all'
   });
+  const [deleteId, setDeleteId] = useState(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+    const { addToast } = useToast();
 
   useEffect(() => {
     dispatch(getAllTourPackages());
   }, [dispatch]);
 
-  // Filter tours based on search and filters
   const filteredTours = tourPackageList.filter(tour => {
     const matchesSearch = tour.title?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
       tour.destination?.toLowerCase().includes(filters.searchTerm.toLowerCase());
@@ -35,7 +40,6 @@ const TourManagement = () => {
     return matchesSearch && matchesStatus && matchesType && matchesDestination;
   });
 
-  // Get unique destinations for filter
   const uniqueDestinations = [...new Set(tourPackageList.map(tour => tour.destination).filter(Boolean))];
 
   const handleAddTour = () => {
@@ -122,28 +126,40 @@ const TourManagement = () => {
           id: editingTour._id,
           formData
         })).unwrap();
+        addToast("success", "Tour updated successfully ✅");
       } else {
         await dispatch(addTourPackage(formData)).unwrap();
+        addToast("success", "Tour added successfully ✅");
       }
 
       setIsModalOpen(false);
       setEditingTour(null);
     } catch (error) {
       console.error('Failed to save tour:', error);
-      alert('Failed to save tour. Please try again.');
+      addToast("error", "Failed to save tour ❌");
     }
   };
 
-  const handleDeleteTour = async (id) => {
-    if (window.confirm('Are you sure you want to delete this tour?')) {
-      try {
-        await dispatch(deleteTourPackage(id)).unwrap();
-      } catch (error) {
-        console.error('Failed to delete tour:', error);
-        alert('Failed to delete tour. Please try again.');
-      }
+  const handleDeleteTour = (id) => {
+    setDeleteId(id);
+    setIsDeleteOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      setDeleteLoading(true);
+      await dispatch(deleteTourPackage(deleteId)).unwrap();
+      setIsDeleteOpen(false);
+      setDeleteId(null);
+      setDeleteLoading(false);
+      addToast("success", "Tour deleted successfully ✅");
+    } catch (error) {
+      console.error("Failed to delete tour:", error);
+      addToast("error", "Failed to delete tour ❌");
+      setDeleteLoading(false);
     }
   };
+
 
   const handleStatusChange = async (id, newStatus) => {
     try {
@@ -154,9 +170,10 @@ const TourManagement = () => {
         id,
         formData
       })).unwrap();
+      addToast("success", "Tour status updated successfully ✅");
     } catch (error) {
       console.error('Failed to update status:', error);
-      alert('Failed to update status. Please try again.');
+      addToast("error", "Failed to update tour status ❌");
     }
   };
 
@@ -171,10 +188,11 @@ const TourManagement = () => {
           id,
           formData
         })).unwrap();
+        addToast("success", "Tour featured status updated successfully ✅");
       }
     } catch (error) {
       console.error('Failed to toggle featured:', error);
-      alert('Failed to update featured status. Please try again.');
+      addToast("error", "Failed to update tour featured status ❌");
     }
   };
 
@@ -295,6 +313,15 @@ const TourManagement = () => {
             loading={loading}
           />
         )}
+        <DeleteConfirmationModal
+          isOpen={isDeleteOpen}
+          onClose={() => setIsDeleteOpen(false)}
+          onConfirm={confirmDelete}
+          loading={deleteLoading}
+          title="Delete Tour Package"
+          message="Are you sure you want to delete this tour package? This action cannot be undone."
+        />
+
       </div>
     </div>
   );
