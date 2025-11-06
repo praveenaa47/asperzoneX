@@ -10,19 +10,19 @@ import PropertyFeatures from "./components/PropertyDetails";
 import NearBy from "./components/NearBy";
 import Location from "./components/Location";
 // import SimilarProperties from "./components/SimilarProperties";
-import { getEstatepropertybyId } from "@/redux/slices/realestateProprtySlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "next/navigation";
+import { getEstatepropertyById } from "@/redux/slices/realestateProprtySlice";
 
 function page() {
   const dispatch = useDispatch();
    const { id } = useParams(); 
-const { singleProperty: property, loading, error } = useSelector((state) => state.property);
+const { selectedProperty: property, loading, error } = useSelector((state) => state.property);
 
   useEffect(() => {
     console.log("Fetching property id:", id);
     if (id) {
-      dispatch(getEstatepropertybyId(id));
+      dispatch(getEstatepropertyById(id));
     }
   }, [dispatch, id]);
 

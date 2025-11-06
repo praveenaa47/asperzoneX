@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-export default function SuccessStories() {
+export default function ClientsReview() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const dispatch = useDispatch();
   const { testimonialList, loading, error } = useSelector(

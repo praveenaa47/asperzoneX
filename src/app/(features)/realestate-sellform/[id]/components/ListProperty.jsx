@@ -15,8 +15,7 @@ export default function FeaturedProperties() {
     dispatch(getEstateproperty());
   }, [dispatch]);
 
-  const featuredProperties =
-    data?.filter((item) => item.isFeatured === true) || [];
+  const featuredProperties = data?.filter((item) => item.isFeatured === true) || [];
 
   const toggleFavorite = (id) => {
     setFavorites((prev) =>
@@ -120,23 +119,17 @@ export default function FeaturedProperties() {
               <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-600 mb-2 sm:mb-3 border-b pb-2 sm:pb-3">
                 <div className="flex items-center">
                   <Bed className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1" />
-                  <span className="hidden sm:inline">
-                    {property.bedrooms} Beds
-                  </span>
+                  <span className="hidden sm:inline">{property.bedrooms} Beds</span>
                   <span className="sm:hidden">{property.bedrooms}</span>
                 </div>
                 <div className="flex items-center">
                   <Bath className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1" />
-                  <span className="hidden sm:inline">
-                    {property.bathrooms} Baths
-                  </span>
+                  <span className="hidden sm:inline">{property.bathrooms} Baths</span>
                   <span className="sm:hidden">{property.bathrooms}</span>
                 </div>
                 <div className="flex items-center">
                   <Maximize className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1" />
-                  <span className="hidden sm:inline">
-                    {property.area?.value} {property.area?.unit}
-                  </span>
+                  <span className="hidden sm:inline">{property.area?.value} {property.area?.unit}</span>
                   <span className="sm:hidden">{property.area?.value}</span>
                 </div>
               </div>
@@ -148,23 +141,15 @@ export default function FeaturedProperties() {
                     : "N/A"}
                 </span>
                 <span className="text-[10px] sm:text-[11px] text-gray-500">
-                  {new Date(property.createdAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
+                  {new Date(property.createdAt).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
                   })}
                 </span>
               </div>
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Button */}
-      <div className="flex justify-center">
-        <button className="flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-gray-800 text-gray-800 font-semibold rounded-md hover:bg-gray-800 hover:text-white transition-colors text-sm sm:text-base">
-          View all
-          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-        </button>
       </div>
     </section>
   );
