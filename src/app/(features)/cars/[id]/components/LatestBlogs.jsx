@@ -57,7 +57,7 @@ export default function LatestBlogs() {
 
                 <div className="flex justify-between items-center text-sm text-gray-600">
                   <a
-                    href={`/blogs/${blog._id}`}
+                    href={`/blog-details/${blog._id}`}
                     className="text-blue-600 font-semibold flex items-center gap-1 hover:gap-2 transition-all"
                   >
                     Read More

@@ -144,6 +144,7 @@ const blogSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      
       // :white_tick: Add Blog
       .addCase(addBlog.pending, (state) => {
         state.loading = true;

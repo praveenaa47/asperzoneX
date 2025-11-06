@@ -14,6 +14,20 @@ export const getAllTestimonials = createAsyncThunk(
   }
 );
 
+export const getCategoryTestimonials = createAsyncThunk(
+  "testimonials/getCategoryTestimonials",
+  async (categoryId, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/testimonials`,{
+        params:{category: categoryId}
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to load testimonials");
+    }
+  }
+);
+
 export const getTestimonialById = createAsyncThunk(
   "testimonials/getTestimonialById",
   async (id, { rejectWithValue }) => {
@@ -101,6 +115,20 @@ const testimonialSlice = createSlice({
         state.pagination = action.payload.pagination || null;
       })
       .addCase(getAllTestimonials.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // getbycategoryid
+        .addCase(getCategoryTestimonials.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getCategoryTestimonials.fulfilled, (state, action) => {
+        state.loading = false;
+        state.testimonialList = action.payload.data || [];
+      })
+      .addCase(getCategoryTestimonials.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

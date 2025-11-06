@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 export default function WhoWeAre() {
   const router = useRouter();
   return (
-    <div className=" px-4 py-10 ">
+    <div className=" px-4 py-10 p-18">
       <h2 className="text-4xl font-bold text-center text-black mb-12">Who We Are</h2>
       
       <div className="border-2 border-gray-300 rounded-2xl p-8 md:p-12 bg-white">
