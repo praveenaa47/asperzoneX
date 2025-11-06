@@ -5,30 +5,37 @@ import { toast } from 'react-toastify';
 import CategoryList from './components/CategoryList';
 import CategoryModal from './components/CategoryModal';
 import { createCategory, deleteCategory, getMaincategory, updateCategory } from '@/redux/slices/MainCategorySlice';
+import DeleteConfirmationModal from '../../components/DeleteModal';
+import { useToast } from '../../components/Toast';
 
 const CategoryManagement = () => {
   const dispatch = useDispatch();
   const { data: categories, loading, error } = useSelector((state) => state.category);
-  
+  const { addToast } = useToast();
+
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name');
+  const [deleteId, setDeleteId] = useState(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Fetch categories on component mount
+
+
   useEffect(() => {
     dispatch(getMaincategory());
   }, [dispatch]);
 
-  // Filter categories based on search and status
   const filteredCategories = categories.filter(category => {
     const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         category.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'active' && category.isActive) ||
-                         (statusFilter === 'inactive' && !category.isActive);
-    
+      category.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' ||
+      (statusFilter === 'active' && category.isActive) ||
+      (statusFilter === 'inactive' && !category.isActive);
+
     return matchesSearch && matchesStatus;
   });
 
@@ -64,29 +71,42 @@ const CategoryManagement = () => {
           id: editingCategory._id,
           reqBody: categoryData
         })).unwrap();
-        toast.success('Category updated successfully');
+        addToast("success", "Category updated successfully ✅");
+
       } else {
         // Add new category
         await dispatch(createCategory(categoryData)).unwrap();
-        toast.success('Category created successfully');
+        addToast("success", "Category created successfully ✅");
+
       }
       setIsModalOpen(false);
       setEditingCategory(null);
     } catch (error) {
-      toast.error(error?.message || 'Failed to save category');
+      addToast("error", "Failed to save category ❌");
+
     }
   };
 
-  const handleDeleteCategory = async (id) => {
-    if (window.confirm('Are you sure you want to delete this category?')) {
-      try {
-        await dispatch(deleteCategory(id)).unwrap();
-        toast.success('Category deleted successfully');
-      } catch (error) {
-        toast.error(error?.message || 'Failed to delete category');
-      }
+  const handleDeleteCategory = (id) => {
+    setDeleteId(id);
+    setIsDeleteOpen(true);
+  };
+  const confirmDelete = async () => {
+    try {
+      setDeleteLoading(true);
+      await dispatch(deleteCategory(deleteId)).unwrap();
+      toast.success("Category deleted successfully");
+      setIsDeleteOpen(false);
+      setDeleteId(null);
+      setDeleteLoading(false);
+      addToast("success", "Category deleted successfully ✅");
+    } catch (error) {
+      addToast("error", "Failed to delete category ❌");
+      setDeleteLoading(false);
     }
   };
+
+
 
   const handleStatusChange = async (id, newStatus) => {
     try {
@@ -99,10 +119,10 @@ const CategoryManagement = () => {
             isActive: newStatus === 'active'
           }
         })).unwrap();
-        toast.success('Category status updated successfully');
+        addToast("success", "Category status updated successfully ✅");
       }
     } catch (error) {
-      toast.error(error?.message || 'Failed to update category status');
+      addToast("error", "Failed to update category status ❌");
     }
   };
 
@@ -205,6 +225,15 @@ const CategoryManagement = () => {
             loading={loading}
           />
         )}
+        <DeleteConfirmationModal
+          isOpen={isDeleteOpen}
+          onClose={() => setIsDeleteOpen(false)}
+          onConfirm={confirmDelete}
+          loading={deleteLoading}
+          title="Delete Category"
+          message="Are you sure you want to delete this category? This action cannot be undone."
+        />
+
       </div>
     </div>
   );
