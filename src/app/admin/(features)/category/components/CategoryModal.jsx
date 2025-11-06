@@ -13,7 +13,7 @@ const CategoryModal = ({ category, onSave, onClose, loading = false }) => {
   const [errors, setErrors] = useState({});
 
   const linkOptions = [
-    { value: '/car', label: 'Car' },
+    { value: '/cars', label: 'Car' },
     { value: '/real-estate', label: 'Property' },
     { value: '/travel-tourism', label: 'Tour Package' },
     { value: '/innovaate', label: 'Innovate' },
