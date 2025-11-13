@@ -15,7 +15,8 @@ export default function FeaturedProperties() {
     dispatch(getEstateproperty());
   }, [dispatch]);
 
-  const featuredProperties = data?.filter((item) => item.isFeatured === true) || [];
+  const featuredProperties =
+    data?.filter((item) => item.isFeatured === true) || [];
 
   const toggleFavorite = (id) => {
     setFavorites((prev) =>
@@ -51,43 +52,46 @@ export default function FeaturedProperties() {
   }
 
   return (
-    <section className="py-12 px-6 sm:px-8 lg:px-16 bg-white">
-      <h2 className="text-3xl font-bold text-center text-gray-900 mb-10">
+    <section className="py-6 sm:py-8 px-4 sm:px-6 lg:px-8 bg-white">
+      <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-5 sm:mb-6">
         Featured Properties
       </h2>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      {/* Grid - 2x2 on mobile, 2 columns on tablet, 4 columns on desktop */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-10 max-w-7xl mx-auto">
         {featuredProperties.map((property) => (
           <div
             key={property.id}
             onClick={() => router.push(`/realestate-details/${property._id}`)}
-            className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300"
+            className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
           >
             {/* Image */}
-            <div className="relative h-44 sm:h-48">
-              <img
-                src={property.images[0]}
-                alt={property.title}
-                className="w-full h-full object-cover"
-              />
+            <div className="relative h-36 sm:h-44 md:h-48">
+             <img
+  src={property.images?.[0] || "/default-property.jpg"}
+  alt={property.propertyName}
+  className="w-full h-full object-cover"
+/>
 
               {property.forSale && (
-                <span className="absolute top-3 left-3 bg-gray-800 text-white text-[11px] px-2 py-1 rounded">
+                <span className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-gray-800 text-white text-[10px] sm:text-[11px] px-2 py-1 rounded">
                   For Sale
                 </span>
               )}
 
               <button
-                onClick={() => toggleFavorite(property.id)}
-                className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFavorite(property.id);
+                }}
+                className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all ${
                   favorites.includes(property.id)
                     ? "bg-red-500 text-white"
                     : "bg-white text-gray-700 hover:bg-gray-100"
                 }`}
               >
                 <Heart
-                  className={`w-4 h-4 ${
+                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
                     favorites.includes(property.id) ? "fill-current" : ""
                   }`}
                 />
@@ -95,44 +99,58 @@ export default function FeaturedProperties() {
             </div>
 
             {/* Content */}
-            <div className="p-4">
-              <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                {property.title}
+            <div className="p-3 sm:p-4">
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1 line-clamp-1">
+                {property.propertyName}
               </h3>
 
-              <div className="flex items-center text-gray-600 text-xs mb-3">
-                <MapPin className="w-3.5 h-3.5 mr-1" />
-                {property.location?.address}, {property.location?.city}
-              </div>
-              <div className="flex items-center gap-2 mb-3 text-xs">
-                <span className="bg-blue-100 text-blue-700 font-medium px-3 py-1 rounded-full">
+          <div className="flex items-center text-gray-600 text-[10px] sm:text-xs mb-2 sm:mb-3">
+  <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 flex-shrink-0" />
+  <span className="line-clamp-1">{property.location}</span>
+</div>
+
+
+              <div className="flex items-center gap-2 mb-2 sm:mb-3 text-[10px] sm:text-xs">
+                <span className="bg-blue-100 text-blue-700 font-medium px-2 sm:px-3 py-1 rounded-full">
                   {property.propertyType}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-gray-600 mb-3 border-b pb-3">
+              <div className="flex items-center justify-between text-[10px] sm:text-xs text-gray-600 mb-2 sm:mb-3 border-b pb-2 sm:pb-3">
                 <div className="flex items-center">
-                  <Bed className="w-3.5 h-3.5 mr-1" />
-                  {property.bedrooms} Beds
+                  <Bed className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1" />
+                  <span className="hidden sm:inline">
+                    {property.bedrooms} Beds
+                  </span>
+                  <span className="sm:hidden">{property.bedrooms}</span>
                 </div>
                 <div className="flex items-center">
-                  <Bath className="w-3.5 h-3.5 mr-1" />
-                  {property.bathrooms} Baths
+                  <Bath className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1" />
+                  <span className="hidden sm:inline">
+                    {property.bathrooms} Baths
+                  </span>
+                  <span className="sm:hidden">{property.bathrooms}</span>
                 </div>
                 <div className="flex items-center">
-                  <Maximize className="w-3.5 h-3.5 mr-1" />
-                  {property.area?.value} {property.area?.unit} Sqft
+                  <Maximize className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1" />
+                  <span className="hidden sm:inline">
+                    {property.area?.value} {property.area?.unit}
+                  </span>
+                  <span className="sm:hidden">{property.area?.value}</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-base font-bold text-blue-600">
+                <span className="text-sm sm:text-base font-bold text-blue-600">
                   {property.price?.amount
                     ? `AED ${property.price.amount.toLocaleString()}`
                     : "N/A"}
                 </span>
-                <span className="text-[11px] text-gray-500">
-                  {new Date(property.createdAt).toLocaleDateString()}
+                <span className="text-[10px] sm:text-[11px] text-gray-500">
+                  {new Date(property.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}
                 </span>
               </div>
             </div>
@@ -142,9 +160,9 @@ export default function FeaturedProperties() {
 
       {/* Button */}
       <div className="flex justify-center">
-        <button className="flex items-center gap-2 px-8 py-3 border-2 border-gray-800 text-gray-800 font-semibold rounded-md hover:bg-gray-800 hover:text-white transition-colors">
+        <button className="flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-gray-800 text-gray-800 font-semibold rounded-md hover:bg-gray-800 hover:text-white transition-colors text-sm sm:text-base">
           View all
-          <ArrowRight className="w-5 h-5" />
+          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       </div>
     </section>

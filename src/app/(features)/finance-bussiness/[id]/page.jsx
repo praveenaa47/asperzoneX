@@ -8,8 +8,8 @@ import WhoWeAreSection from './components/WhoWeAre'
 import WhatOffer from './components/WhatOffer'
 import MeetOurTeam from './components/OurTeam'
 import OurStories from './components/Stories'
-import TestimonialSection from '../../home/components/Testimonials'
-import Touch from '../../homeConsulting/[id]/components/Touch'
+// import Touch from '../../homeConsulting/[id]/components/Touch'
+import ClientsReview from './components/Reviews'
 
 function page() {
   return (
@@ -22,8 +22,8 @@ function page() {
       <WhatOffer/>
       <MeetOurTeam/>
       <OurStories/>
-      <TestimonialSection/>
-      <Touch/>
+      <ClientsReview/>
+      {/* <Touch/> */} 
       <AspireZonesFooter/>
     </div>
   )

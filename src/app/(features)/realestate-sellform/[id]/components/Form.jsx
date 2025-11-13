@@ -1,87 +1,182 @@
-"use client"
-import React, { useState } from 'react';
-import { Upload } from 'lucide-react';
-import { FaTag } from "react-icons/fa6";
-import { FaWpforms } from "react-icons/fa";
-
+"use client";
+import React, { useState } from "react";
+import { Upload } from "lucide-react";
+import { FaTag, FaWpforms } from "react-icons/fa6";
+import { useParams, useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { addEstateproperty } from "@/redux/slices/realestateProprtySlice";
+import { useToast } from "@/components/UserToast";
 
 export default function PropertyListingForm() {
+  const { id } = useParams();
+  const router = useRouter();
+  const { addToast } = useToast();
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.property);
+
   const [formData, setFormData] = useState({
-    propertyName: '',
-    location: '',
-    propertyType: '',
-    bedType: '',
-    bedrooms: '',
-    bathrooms: '',
-    yearBuilt: '',
-    lotSize: '',
-    furnished: 'furnished',
-    parking: false,
-    waterSupply: false,
-    swimmingPool: false,
-    pets: false,
-    wifi: false,
-    security: false,
-    eventsAllowed: false,
-    pricePer: 'month',
-    price: '',
-    email: '',
-    phone: '',
-    userType: 'owner'
+    propertyName: "",
+    location: "",
+    propertyType: "",
+    bedType: "",
+    bedrooms: "",
+    bathrooms: "",
+    yearBuilt: "",
+    lotSize: "",
+    furnished: "furnished",
+    amenities: [],
+    price: "",
+    pricePer: "month",
+    // negotiable: false,
+    email: "",
+    phone: "",
+    ownershipType: "Owner",
+    description: "",
   });
 
+  const [images, setImages] = useState([]);
+
+  // Handle text & select inputs
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  // Handle amenities as checkboxes
+  const toggleAmenity = (amenity) => {
+    setFormData((prev) => ({
+      ...prev,
+      amenities: prev.amenities.includes(amenity)
+        ? prev.amenities.filter((a) => a !== amenity)
+        : [...prev.amenities, amenity],
+    }));
+  };
+
+  // Handle file upload
+  const handleFileChange = (e) => {
+    setImages([...e.target.files]);
+  };
+
+  // Submit to API
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    alert('Property listing submitted successfully!');
+
+    // Build FormData for multipart/form-data
+    const fd = new FormData();
+    fd.append("propertyName", formData.propertyName);
+    fd.append("location", formData.location);
+    fd.append("bedType", formData.bedType);
+    fd.append("bedrooms", formData.bedrooms);
+    fd.append("bathrooms", formData.bathrooms);
+    fd.append("yearBuilt", formData.yearBuilt);
+    fd.append("lotSize", formData.lotSize);
+    fd.append("furnished", formData.furnished);
+    fd.append("email", formData.email);
+    fd.append("phone", formData.phone);
+    fd.append("ownershipType", formData.ownershipType);
+    fd.append("propertyType", formData.propertyType);
+    fd.append("description", formData.description);
+
+    // Price structure
+    fd.append("price[amount]", formData.price);
+    fd.append("price[period]", formData.pricePer);
+    // fd.append("price[negotiable]", formData.negotiable);
+
+    // Append amenities array
+    formData.amenities.forEach((a) => fd.append("amenities[]", a));
+
+    // Append image files
+    images.forEach((file) => fd.append("images", file));
+
+    try {
+      const result = await dispatch(addEstateproperty(fd)).unwrap();
+      addToast("success", "Property added successfully!");
+      // router.push("/real-estate"); // redirect after success
+    } catch (err) {
+      console.error("Error submitting:", err);
+      addToast("error", "Failed to add property.");
+    }
   };
 
   return (
     <div className="min-h-screen">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-start gap-3  px-4 sm:px-6">
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-md">
-<FaWpforms className="text-md" />
-          Enquiry Now
-        </button>
-        <button className="bg-gray-700 bg-opacity-90 hover:bg-opacity-100 text-white px-5 py-2.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-md">
-<FaTag  className="text-md"/>   
-       Sell Now
-        </button>
-      </div>
-              <div className=" border-b border-gray-300 w-full"></div>
-
+          <button
+            onClick={() => router.push(`/real-estate/${id}`)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-md"
+          >
+            <FaWpforms className="text-md" />
+            Enquiry Now
+          </button>
+          <button className="bg-gray-700 bg-opacity-90 hover:bg-opacity-100 text-white px-5 py-2.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-md">
+            <FaTag className="text-md" />
+            Sell Now
+          </button>
+        </div>
+        <div className=" border-b border-gray-300 w-full"></div>
 
         <div className="bg-white mt-0 px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-bold text-center text-gray-900 mb-1">List Your Property</h1>
+          <h1 className="text-2xl font-bold text-center text-gray-900 mb-1">
+            List Your Property
+          </h1>
           <p className="text-sm text-gray-500 mb-8 text-center">
-            Fill in the details below to list your property and connect with potential buyers.
+            Fill in the details below to list your property and connect with
+            potential buyers.
           </p>
 
           <div className="space-y-8">
             {/* Property Image */}
             <div>
-              <h2 className="text-base font-semibold text-gray-900 mb-1">Property Image</h2>
+              <h2 className="text-base font-semibold text-gray-900 mb-1">
+                Property Image
+              </h2>
               <p className="text-xs text-gray-500 mb-4">
-High - quality photo increase listing engagement. upload at least 3 photos. 
+                High-quality photos increase listing engagement. Upload at least
+                3 photos.
               </p>
-              <div className="border-2 border-dashed border-[#2563EB99] rounded-lg p-12 text-center hover:border-gray-400 transition-colors cursor-pointer bg-gray-50">
+
+              <label
+                htmlFor="file-upload"
+                className="border-2 border-dashed border-[#2563EB99] rounded-lg p-12 text-center hover:border-gray-400 transition-colors cursor-pointer bg-gray-50 relative block"
+              >
                 <Upload className="mx-auto h-10 w-10 text-gray-400 mb-3" />
-                <p className="text-sm text-gray-500">Click to upload</p>
-              </div>
+                <p className="text-sm text-gray-500">
+                  Click to upload or drag and drop
+                </p>
+                <input
+                  id="file-upload"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                />
+              </label>
+
+              {/* ✅ Preview uploaded images */}
+              {images.length > 0 && (
+                <div className="mt-4 grid grid-cols-3 gap-3">
+                  {images.map((img, i) => (
+                    <img
+                      key={i}
+                      src={URL.createObjectURL(img)}
+                      alt="preview"
+                      className="w-full h-32 object-cover rounded-md shadow-sm border"
+                    />
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Property Details */}
             <div>
-              <h2 className="text-base font-bold text-black mb-1">Property Details</h2>
+              <h2 className="text-base font-bold text-black mb-1">
+                Property Details
+              </h2>
               <p className="text-xs text-gray-500 mb-4">
                 Let us know about your property
               </p>
@@ -96,7 +191,7 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                     value={formData.propertyName}
                     onChange={handleChange}
                     placeholder="E.g., Dreamland Villas, Sweet Home etc"
-                    className="w-full px-3 py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-3 py-2 text-black text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -108,7 +203,7 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                       name="location"
                       value={formData.location}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                      className="w-full px-3 py-2 text-black text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                     >
                       <option value="">Select</option>
                       <option value="new-york">New York</option>
@@ -124,7 +219,7 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                       name="propertyType"
                       value={formData.propertyType}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 text-sm border border-border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                      className="w-full px-3 py-2 text-black text-sm border border-border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                     >
                       <option value="">Select</option>
                       <option value="apartment">Apartment</option>
@@ -135,16 +230,18 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                  <label className="block text-x font-medium text-gray-700 mb-1.5">
                     Bed Type
                   </label>
                   <select
                     name="bedType"
                     value={formData.bedType}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className="w-full px-3 py-2 text-black text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                   >
-                    <option value="">Choose the beds in your listing place</option>
+                    <option value="">
+                      Choose the beds in your listing place
+                    </option>
                     <option value="single">Single</option>
                     <option value="double">Double</option>
                     <option value="queen">Queen</option>
@@ -156,7 +253,9 @@ High - quality photo increase listing engagement. upload at least 3 photos.
 
             {/* Property Specifications */}
             <div>
-              <h2 className="text-base font-bold text-black mb-4">Property Specifications</h2>
+              <h2 className="text-base font-bold text-black mb-4">
+                Property Specifications
+              </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1.5">
@@ -168,7 +267,7 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                     value={formData.bedrooms}
                     onChange={handleChange}
                     placeholder="0"
-                    className="w-full px-3 py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-3 py-2 text-black text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                 </div>
                 <div>
@@ -181,7 +280,7 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                     value={formData.bathrooms}
                     onChange={handleChange}
                     placeholder="0"
-                    className="w-full px-3 py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-3 text-black py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                 </div>
                 <div>
@@ -192,7 +291,7 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                     name="yearBuilt"
                     value={formData.yearBuilt}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className="w-full px-3 py-2 text-black text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                   >
                     <option value="">Select</option>
                     <option value="2024">2024</option>
@@ -210,7 +309,7 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                     name="lotSize"
                     value={formData.lotSize}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className="w-full px-3 py-2 text-black text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                   >
                     <option value="">Select</option>
                     <option value="500-1000">500-1000 sq ft</option>
@@ -221,29 +320,48 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                 </div>
               </div>
               <div className="mt-4">
-                <span className="block text-xs font-medium text-gray-700 mb-2">Furnishing Status</span>
+                <span className="block text-xs font-medium text-gray-700 mb-2">
+                  Furnishing Status
+                </span>
                 <div className="flex gap-6">
                   <label className="flex items-center">
                     <input
                       type="radio"
                       name="furnished"
                       value="furnished"
-                      checked={formData.furnished === 'furnished'}
+                      checked={formData.furnished === "furnished"}
                       onChange={handleChange}
                       className="w-4 h-4 text-blue-600 border-[#2563EB99] focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Furnished</span>
+                    <span className="ml-2 text-sm text-gray-700">
+                      Furnished
+                    </span>
                   </label>
                   <label className="flex items-center">
                     <input
                       type="radio"
                       name="furnished"
                       value="unfurnished"
-                      checked={formData.furnished === 'unfurnished'}
+                      checked={formData.furnished === "semifurnished"}
                       onChange={handleChange}
                       className="w-4 h-4 text-blue-600 border-[#2563EB99] focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Un-furnished</span>
+                    <span className="ml-2 text-sm text-gray-700">
+                      Semi-furnished
+                    </span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="furnished"
+                      value="unfurnished"
+                      checked={formData.furnished === "unfurnished"}
+                      onChange={handleChange}
+                      className="w-4 h-4 text-blue-600 border-[#2563EB99] focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">
+                      Un-furnished
+                    </span>
                   </label>
                 </div>
               </div>
@@ -252,7 +370,9 @@ High - quality photo increase listing engagement. upload at least 3 photos.
             {/* Amenities */}
             <div>
               <h2 className="text-base font-bold text-black mb-1">Amenities</h2>
-              <p className="text-xs text-gray-500 mb-4">Check all available amenities</p>
+              <p className="text-xs text-gray-500 mb-4">
+                Check all available amenities
+              </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3">
                 <label className="flex items-center">
                   <input
@@ -272,7 +392,9 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                     onChange={handleChange}
                     className="w-4 h-4 text-blue-600 border-[#2563EB99] rounded focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700">Water Supply</span>
+                  <span className="ml-2 text-sm text-gray-700">
+                    Water Supply
+                  </span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -282,7 +404,9 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                     onChange={handleChange}
                     className="w-4 h-4 text-blue-600 border-[#2563EB99] rounded focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700">Swimming Pool</span>
+                  <span className="ml-2 text-sm text-gray-700">
+                    Swimming Pool
+                  </span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -322,7 +446,9 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                     onChange={handleChange}
                     className="w-4 h-4 text-blue-600 border-[#2563EB99] rounded focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700">Event Allowed</span>
+                  <span className="ml-2 text-sm text-gray-700">
+                    Event Allowed
+                  </span>
                 </label>
               </div>
             </div>
@@ -332,53 +458,67 @@ High - quality photo increase listing engagement. upload at least 3 photos.
               <h2 className="text-base font-bold text-black mb-4">Pricing</h2>
               <div className="mb-4">
                 <label className="block text-xs font-medium text-gray-700 mb-2">
-                  Price Per <span className="text-gray-400 font-normal">(Choose applicable)</span>
+                  Price Per{" "}
+                  <span className="text-gray-400 font-normal">
+                    (Choose applicable)
+                  </span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, pricePer: 'year' }))}
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, pricePer: "yearly" }))
+                    }
                     className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                      formData.pricePer === 'year'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                      formData.pricePer === "yearly"
+                        ? "bg-blue-500 text-white"
+                        : "bg-blue-50 text-blue-600 hover:bg-blue-100"
                     }`}
                   >
                     YEAR / YEARLY
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, pricePer: 'month' }))}
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, pricePer: "monthly" }))
+                    }
                     className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                      formData.pricePer === 'month'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                      formData.pricePer === "monthly"
+                        ? "bg-blue-500 text-white"
+                        : "bg-blue-50 text-blue-600 hover:bg-blue-100"
                     }`}
                   >
                     PER / MTH
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, pricePer: 'day' }))}
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, pricePer: "daily" }))
+                    }
                     className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                      formData.pricePer === 'day'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                      formData.pricePer === "daily"
+                        ? "bg-blue-500 text-white"
+                        : "bg-blue-50 text-blue-600 hover:bg-blue-100"
                     }`}
                   >
                     PER / DAY
                   </button>
-                  <button
+                  {/* <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, pricePer: 'negotiate' }))}
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        pricePer: "negotiate",
+                      }))
+                    }
                     className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                      formData.pricePer === 'negotiate'
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                      formData.pricePer === "negotiate"
+                        ? "bg-blue-500 text-white"
+                        : "bg-blue-50 text-blue-600 hover:bg-blue-100"
                     }`}
                   >
                     NEGOTIABLE
-                  </button>
+                  </button> */}
                 </div>
               </div>
               <div>
@@ -391,14 +531,16 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                   value={formData.price}
                   onChange={handleChange}
                   placeholder="$ 0000"
-                  className="w-full px-3 py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full text-black px-3 py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 />
               </div>
             </div>
 
             {/* Contact & Listing Details */}
             <div>
-              <h2 className="text-base font-bold text-black mb-4">Contact & Listing details</h2>
+              <h2 className="text-base font-bold text-black mb-4">
+                Contact & Listing details
+              </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1.5">
@@ -410,7 +552,7 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                     value={formData.email}
                     onChange={handleChange}
                     placeholder=""
-                    className="w-full px-3 py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full text-black px-3 py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                 </div>
                 <div>
@@ -423,19 +565,21 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder=""
-                    className="w-full px-3 py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full text-black px-3 py-2 text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   />
                 </div>
               </div>
               <div>
-                <span className="block text-xs font-medium text-gray-700 mb-2">Who are you?</span>
+                <span className="block text-xs font-medium text-gray-700 mb-2">
+                  Who are you?
+                </span>
                 <div className="flex gap-6">
                   <label className="flex items-center">
                     <input
                       type="radio"
                       name="userType"
                       value="owner"
-                      checked={formData.userType === 'owner'}
+                      checked={formData.userType === "owner"}
                       onChange={handleChange}
                       className="w-4 h-4 text-blue-600 border-[#2563EB99] focus:ring-blue-500"
                     />
@@ -446,7 +590,7 @@ High - quality photo increase listing engagement. upload at least 3 photos.
                       type="radio"
                       name="userType"
                       value="dealer"
-                      checked={formData.userType === 'dealer'}
+                      checked={formData.userType === "dealer"}
                       onChange={handleChange}
                       className="w-4 h-4 text-blue-600 border-[#2563EB99] focus:ring-blue-500"
                     />
@@ -459,7 +603,7 @@ High - quality photo increase listing engagement. upload at least 3 photos.
             {/* Form Actions */}
             <div className="flex gap-3 pt-4 justify-center">
               <button
-                type="button"
+                type="reset"
                 className="flex px-6 py-2.5 border border-[#2563EB99] rounded text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 RESET
@@ -467,9 +611,12 @@ High - quality photo increase listing engagement. upload at least 3 photos.
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="flex px-6 py-2.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 transition-colors"
+                disabled={loading}
+                className={`flex px-6 py-2.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 transition-colors ${
+                  loading ? "opacity-70 cursor-not-allowed" : ""
+                }`}
               >
-                Submit Property
+                {loading ? "Submitting..." : "Submit Property"}
               </button>
             </div>
           </div>

@@ -1,6 +1,8 @@
+import { useRouter } from "next/navigation";
 import React from "react";
 
 export default function CarHero() {
+  const router = useRouter();
   return (
     <div className="w-full ">
       {/* Main Banner Section */}
@@ -20,7 +22,9 @@ export default function CarHero() {
                 <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors shadow-md hover:shadow-lg">
                   Explore Cars
                 </button>
-                <button className="bg-white hover:bg-gray-50 text-gray-900 px-8 py-3 rounded-lg font-semibold border-2 border-gray-300 transition-colors">
+                <button
+                onClick={()=>router.push("/sell-car")}
+                 className="bg-white hover:bg-gray-50 text-gray-900 px-8 py-3 rounded-lg font-semibold border-2 border-gray-300 transition-colors">
                   Sell Cars
                 </button>
               </div>

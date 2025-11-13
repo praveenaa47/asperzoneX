@@ -1,17 +1,19 @@
 "use client";
-import { Heart, Menu, SquareMenu } from "lucide-react";
+import { useState } from "react";
+import { Heart, Menu, SquareMenu, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-
 export default function Header() {
-const router = useRouter();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   return (
-    <header className="bg-white  py-3">
-      <div className="sm:px-6 lg:px-8">
+    <header className="bg-white shadow-sm py-3 relative">
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-2">
-            <div className="w-50 h-50 flex items-center justify-center">
+          {/* Logo */}
+          <div className="flex items-center">
+            <div className="w-32 sm:w-40 md:w-50 h-12 sm:h-14 flex items-center justify-center">
               <img
                 src="/logo.png"
                 alt="Aspire Zones X Logo"
@@ -20,67 +22,143 @@ const router = useRouter();
             </div>
           </div>
 
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
             <a
               href="/"
-              className="text-gray-700 hover:text-blue-600 font-medium"
+              className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
               Home
             </a>
             <a
               href="/aboutus"
-              className="text-gray-700 hover:text-blue-600 font-medium"
+              className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
               About us
             </a>
             <a
               href="/Blogs"
-              className="text-gray-700 hover:text-blue-600 font-medium"
+              className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
               Blog
             </a>
             <a
               href="/conatctus"
-              className="text-gray-700 hover:text-blue-600 font-medium"
+              className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
               Contact
             </a>
           </nav>
 
-          {/* Right Actions */}
-          <div className="flex items-center space-x-4">
+          {/* Right Actions - Desktop */}
+          <div className="hidden md:flex items-center space-x-4">
             <button
               onClick={() => (window.location.href = "/My-Ads")}
-              className="hidden md:flex items-center text-gray-700 hover:text-blue-600 font-medium"
+              className="flex items-center text-gray-700 hover:text-blue-600 font-medium transition-colors"
             >
               <span className="mr-2">My Ads</span>
-              <SquareMenu className="w-4 h-4 ml-1" />
+              <SquareMenu className="w-4 h-4" />
             </button>
 
             <button
               onClick={() => (window.location.href = "/saved")}
-              className="hidden md:flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+              className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
             >
               Favorites
               <Heart className="w-4 h-4 ml-2" />
             </button>
 
             <button
-              onClick={() =>router.push("/Login")}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+              onClick={() => router.push("/Login")}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+            >
+              Log in
+            </button>
+          </div>
+
+          {/* Mobile Actions */}
+          <div className="flex md:hidden items-center space-x-2">
+            <button
+              onClick={() => router.push("/Login")}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors"
             >
               Log in
             </button>
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden"
+              className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Toggle menu"
             >
-              <Menu className="w-6 h-6 text-gray-700" />
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50">
+          <nav className="px-4 py-4 space-y-1">
+            <a
+              href="/"
+              className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Home
+            </a>
+            <a
+              href="/aboutus"
+              className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              About us
+            </a>
+            <a
+              href="/Blogs"
+              className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Blog
+            </a>
+            <a
+              href="/conatctus"
+              className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Contact
+            </a>
+
+            <div className="pt-4 mt-4 border-t border-gray-200 space-y-2">
+              <button
+                onClick={() => {
+                  window.location.href = "/My-Ads";
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-colors"
+              >
+                <span>My Ads</span>
+                <SquareMenu className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={() => {
+                  window.location.href = "/saved";
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-colors"
+              >
+                <span>Favorites</span>
+                <Heart className="w-4 h-4" />
+              </button>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

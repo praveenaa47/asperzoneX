@@ -24,7 +24,7 @@ export default function SupportForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 ">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4 ">
       <div className="w-full  max-w-5xl   bg-white rounded-lg  shadow-md border border-gray-300  p-6 md:p-10">
         {/* Header */}
         <div className="text-center mb-8">

@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { BASE_URL } from "../baseUrl";
 import axios from "axios";
+
 export const getEstateproperty = createAsyncThunk(
   "property/getEstateproperty",
   async (_, { rejectWithValue }) => {

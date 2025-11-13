@@ -88,15 +88,16 @@ function page() {
             />
 
             <CarList
-            
               cars={(carList || []).map((car) => ({
                 id: car._id,
-                image: car.images?.[0],
+                image: car.media?.[0]?.url || "/placeholder.jpg", 
                 model: `${car.brand} ${car.model}`,
-                price: `₹${car.price.amount}`,
+                price: `₹${car.price?.totalPrice?.toLocaleString() || 0}`, 
                 year: car.year,
                 km: `${car.kmsDriven} km`,
-                location: `${car.location.city}, ${car.location.country}`,
+                location: `${car.location?.city || ""}, ${
+                  car.location?.country || ""
+                }`,
                 fuel: car.fuelType,
                 transmission: car.transmission,
                 color: car.color,
