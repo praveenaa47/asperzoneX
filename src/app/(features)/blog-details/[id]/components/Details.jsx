@@ -98,11 +98,11 @@ export default function Details() {
                 >
                   <div className="flex items-start gap-3 sm:gap-4">
                     {section.icon && (
-                      <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-lg flex items-center justify-center overflow-hidden">
+                      <div className="flex-shrink-0 w-15 h-15 sm:w-12 sm:h-12  rounded-lg flex items-center justify-center overflow-hidden">
                         <img
                           src={section.icon}
                           alt={section.title}
-                          className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
+                          className="lg:w-15 lg:h-15 sm:w-8 sm:h-8 object-contain"
                         />
                       </div>
                     )}
@@ -118,6 +118,9 @@ export default function Details() {
                 </div>
               ))}
             </div>
+
+
+            
           </div>
         </div>
       )}

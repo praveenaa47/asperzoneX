@@ -1,5 +1,6 @@
 import React from 'react';
 import { User, Calendar } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const BlogPostCard = ({ 
   image, 
@@ -7,8 +8,10 @@ const BlogPostCard = ({
   date = "March 15 2025", 
   title, 
   description, 
-  keyTopics 
+  keyTopics,
+  id
 }) => {
+  const router = useRouter();
   return (
     <article className="bg-white rounded-lg shadow-sm overflow-hidden">
       <img 
@@ -20,7 +23,7 @@ const BlogPostCard = ({
         <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
           <span className="flex items-center gap-1">
             <User size={16} />
-            By {author}
+             {author}
           </span>
           <span className="flex items-center gap-1">
             <Calendar size={16} />
@@ -37,7 +40,9 @@ const BlogPostCard = ({
           <span className="font-semibold text-gray-900">Key Topics:</span>
           <span className="text-gray-700"> {keyTopics}</span>
         </div>
-        <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition">
+        <button 
+        onClick={()=>router.push(`/blog-details/${id}`)}
+        className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition">
           📧 Enquiry Now
         </button>
       </div>

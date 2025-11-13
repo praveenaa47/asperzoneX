@@ -22,7 +22,7 @@ export const getCarById = createAsyncThunk(
       const response = await axios.get(
         `${BASE_URL}/cars/${id}`
       );
-      return response.data;
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Failed to fetch car");
     }
@@ -36,6 +36,28 @@ export const addCar = createAsyncThunk(
       const token = localStorage.getItem("adminToken");
       const response = await axios.post(
         `${BASE_URL}/cars/admin`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to add car");
+    }
+  }
+);
+
+export const addUserCar = createAsyncThunk(
+  "cars/addCar",
+  async (formData, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await axios.post(
+        `${BASE_URL}/cars/user`,
         formData,
         {
           headers: {
@@ -126,7 +148,7 @@ const carSlice = createSlice({
     })
     .addCase(getCarById.fulfilled, (state, action) => {
       state.loading = false;
-      state.selectedCar = action.payload.data;
+      state.selectedCar = action.payload;
     })
     .addCase(getCarById.rejected, (state, action) => {
       state.loading = false;

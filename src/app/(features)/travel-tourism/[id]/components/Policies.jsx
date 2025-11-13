@@ -114,13 +114,13 @@ export default function PoliciesAccordion() {
   };
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className=" mx-auto">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-gray-900 mb-8 sm:mb-12">
+    <div className="py-6 px-4 sm:py-8 sm:px-6 md:px-8 lg:px-10 xl:px-20">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-6 sm:mb-8 md:mb-12">
           Important Information & Policies
         </h1>
 
-        <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-2 sm:space-y-3 md:space-y-4 text-black">
           {policies.map((policy, index) => {
             const Icon = policy.icon;
             const isOpen = openIndex === index;
@@ -132,18 +132,18 @@ export default function PoliciesAccordion() {
               >
                 <button
                   onClick={() => toggleAccordion(index)}
-                  className="w-full px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors duration-200"
+                  className="w-full px-4 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 text-black flex items-center justify-between text-left hover:bg-gray-50 transition-colors duration-200"
                 >
-                  <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="flex items-center gap-2 sm:gap-3 md:gap-4 min-w-0">
                     <div className="flex-shrink-0">
-                      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-600" />
                     </div>
-                    <span className="text-base sm:text-lg font-semibold text-gray-900">
+                    <span className="text-sm sm:text-base md:text-lg font-semibold text-black truncate">
                       {policy.title}
                     </span>
                   </div>
                   <ChevronDown
-                    className={`w-5 h-5 text-gray-500 transition-transform duration-300 flex-shrink-0 ${
+                    className={`w-4 h-4 sm:w-5 sm:h-5 text-black transition-transform duration-300 flex-shrink-0 ml-2 ${
                       isOpen ? 'transform rotate-180' : ''
                     }`}
                   />
@@ -154,8 +154,8 @@ export default function PoliciesAccordion() {
                     isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
                   } overflow-hidden`}
                 >
-                  <div className="px-4 sm:px-6 pb-4 sm:pb-6 pt-2">
-                    <div className="pl-0 sm:pl-10 text-sm sm:text-base">
+                  <div className="px-4 sm:px-5 md:px-6 pb-3 sm:pb-4 md:pb-6 pt-1 sm:pt-2">
+                    <div className="sm:pl-8 md:pl-10 text-xs sm:text-sm md:text-base">
                       <div dangerouslySetInnerHTML={{ __html: policy.content }} />
                     </div>
                   </div>

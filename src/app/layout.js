@@ -1,6 +1,7 @@
 import {  Open_Sans } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "@/redux/provider";
+import { ToastProvider } from "@/components/UserToast";
 
 const openSans = Open_Sans({
  subsets: ["latin"],
@@ -18,7 +19,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${openSans.variable} font-sans antialiased`}>
          <ReduxProvider>
-        {children}
+       <ToastProvider> {children}</ToastProvider>
         </ReduxProvider>
       </body>
     </html>

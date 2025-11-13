@@ -7,7 +7,7 @@ export const getCourses = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${BASE_URL}/courses`);
-      return response.data; // contains -> data + pagination
+      return response.data; 
     } catch (error) {
       return rejectWithValue(error.response?.data || "Failed to load courses");
     }

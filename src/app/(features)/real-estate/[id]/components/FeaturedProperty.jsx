@@ -67,11 +67,11 @@ export default function FeaturedProperties() {
           >
             {/* Image */}
             <div className="relative h-36 sm:h-44 md:h-48">
-              <img
-                src={property.images[0]}
-                alt={property.title}
-                className="w-full h-full object-cover"
-              />
+             <img
+  src={property.images?.[0] || "/default-property.jpg"}
+  alt={property.propertyName}
+  className="w-full h-full object-cover"
+/>
 
               {property.forSale && (
                 <span className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-gray-800 text-white text-[10px] sm:text-[11px] px-2 py-1 rounded">
@@ -101,15 +101,14 @@ export default function FeaturedProperties() {
             {/* Content */}
             <div className="p-3 sm:p-4">
               <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1 line-clamp-1">
-                {property.title}
+                {property.propertyName}
               </h3>
 
-              <div className="flex items-center text-gray-600 text-[10px] sm:text-xs mb-2 sm:mb-3">
-                <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 flex-shrink-0" />
-                <span className="line-clamp-1">
-                  {property.location?.address}, {property.location?.city}
-                </span>
-              </div>
+          <div className="flex items-center text-gray-600 text-[10px] sm:text-xs mb-2 sm:mb-3">
+  <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 flex-shrink-0" />
+  <span className="line-clamp-1">{property.location}</span>
+</div>
+
 
               <div className="flex items-center gap-2 mb-2 sm:mb-3 text-[10px] sm:text-xs">
                 <span className="bg-blue-100 text-blue-700 font-medium px-2 sm:px-3 py-1 rounded-full">

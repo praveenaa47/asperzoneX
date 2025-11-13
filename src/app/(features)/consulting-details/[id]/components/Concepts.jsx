@@ -1,68 +1,35 @@
-import React from 'react';
+"use client";
+import React from "react";
 
-export default function VillaPhases() {
-  const phases = [
-    {
-      number: 1,
-      title: "Concept & Planning",
-      image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80",
-      description: "Our journey began with understanding the client's lifestyle and aspirations. We created multiple design concepts before finalizing a modern tropical theme — open, airy, and deeply connected with nature.",
-      features: []
-    },
-    {
-      number: 2,
-      title: "Design & Visualization",
-      image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
-      description: "Our architects and interior designers worked together to visualize every space. The focus was on bringing natural light indoors, with large glass panels and warm wooden finishes.",
-      features: ["Sustainable Materials", "Open Layouts", "Smart Lighting Design"]
-    }
-  ];
+export default function VillaPhases({sections}) {
+
 
   return (
-    <div className="bg-white py-12 md:py-16 lg:py-20">
-      <div className="container mx-auto px-4 max-w-6xl">
+    <div className="bg-white py-4 sm:py-6 md:py-8 lg:py-10">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 max-w-7xl">
         {/* Phases */}
-        <div className="space-y-12 md:space-y-16 lg:space-y-20">
-          {phases.map((phase, index) => (
-            <div key={index} className="space-y-6">
+        <div className="space-y-6 sm:space-y-8 md:space-y-8 lg:space-y-8">
+          {sections.map((section, index) => (
+            <div key={index} className="space-y-3 sm:space-y-4 md:space-y-5">
               {/* Phase Heading */}
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 text-center">
-                Phase {phase.number}: {phase.title}
+              <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 text-center px-2">
+                Phase {section.title}
               </h2>
 
-              {/* Phase Image */}
-              <div className="relative rounded-xl overflow-hidden shadow-lg">
-                <img 
-                  src={phase.image}
-                  alt={phase.title}
-                  className="w-full h-64 md:h-80 lg:h-96 object-cover"
+              {/* Image */}
+              <div className="relative rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden shadow-lg">
+                <img
+                  src={section.image}
+                  alt={section.title}
+                  className="w-full h-48 xs:h-56 sm:h-64 md:h-80 lg:h-96 object-cover transition-transform duration-500 hover:scale-105"
                 />
               </div>
 
-              {/* Phase Description */}
-              <div className="space-y-4">
-                <p className="text-gray-700 text-base md:text-lg leading-relaxed text-justify">
-                  {phase.description}
+              {/* Description */}
+              <div className="space-y-2 sm:space-y-3 md:space-y-3">
+                <p className="text-gray-700 text-xs sm:text-sm md:text-base lg:text-base leading-relaxed text-justify px-2 sm:px-0">
+                  {section.description}
                 </p>
-
-                {/* Features */}
-                {phase.features.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {phase.features.map((feature, idx) => (
-                      <React.Fragment key={idx}>
-                        <a 
-                          href="#" 
-                          className="text-blue-600 hover:text-blue-800 font-medium text-sm md:text-base transition-colors"
-                        >
-                          {feature}
-                        </a>
-                        {idx < phase.features.length - 1 && (
-                          <span className="text-gray-400">|</span>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
           ))}
@@ -70,4 +37,4 @@ export default function VillaPhases() {
       </div>
     </div>
   );
-}
+} 

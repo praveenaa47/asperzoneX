@@ -1,5 +1,7 @@
 "use client"
+import { AddtoWishlist, getWishlist } from "@/redux/slices/wishlistSlice";
 import { Heart, MapPin, Calendar, Gauge, ArrowRight } from "lucide-react";
+
 
 export default function CarListing() {
   const cars = [

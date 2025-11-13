@@ -23,7 +23,23 @@ export const getCarouselById = createAsyncThunk(
       const response = await axios.get(`${BASE_URL}/carousels/${id}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch carousel");
+      return rejectWithValue(
+        error.response?.data || "Failed to fetch carousel"
+      );
+    }
+  }
+);
+// carousel by categoryid
+export const getCarouselByCategoryId = createAsyncThunk(
+  "carousels/getCarouselByCategoryId",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/carousels/category/${id}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Failed to fetch carousel"
+      );
     }
   }
 );
@@ -53,15 +69,21 @@ export const updateCarousel = createAsyncThunk(
   async ({ id, formData }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("adminToken");
-      const response = await axios.put(`${BASE_URL}/carousels/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.put(
+        `${BASE_URL}/carousels/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to update carousel");
+      return rejectWithValue(
+        error.response?.data || "Failed to update carousel"
+      );
     }
   }
 );
@@ -79,7 +101,9 @@ export const deleteCarousel = createAsyncThunk(
       });
       return { id, ...response.data };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to delete carousel");
+      return rejectWithValue(
+        error.response?.data || "Failed to delete carousel"
+      );
     }
   }
 );
@@ -89,6 +113,7 @@ const carouselSlice = createSlice({
   initialState: {
     carouselList: [],
     selectedCarousel: null,
+    carouselByCategory: [],
     pagination: null,
     loading: false,
     error: null,
@@ -121,6 +146,20 @@ const carouselSlice = createSlice({
         state.selectedCarousel = action.payload.data;
       })
       .addCase(getCarouselById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // ✅ Get by category ID
+
+      .addCase(getCarouselByCategoryId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getCarouselByCategoryId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.carouselByCategory = action.payload.data || [];
+      })
+      .addCase(getCarouselByCategoryId.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

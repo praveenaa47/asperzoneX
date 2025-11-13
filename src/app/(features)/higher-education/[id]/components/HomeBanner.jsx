@@ -1,42 +1,62 @@
 "use client";
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { getCarouselByCategoryId } from "@/redux/slices/carouselSlice";
+import { useParams } from "next/navigation";
 
 export default function HomeBanner() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const { carouselByCategory, loading } = useSelector(
+    (state) => state.carousels
+  );
 
-  const slides = [
-    {
-      title: "Strategic Finance & Business Advisory",
-      subtitle:
-        "Relax On Pristine Beaches And Enjoy Luxury Resorts With Stunning Ocean Views.",
-      image: "/financebanner.jpg",
-    },
-    {
-      title: "Strategic Finance & Business Advisory",
-      subtitle:
-        "Experience Overwater Bungalows And Crystal Clear Turquoise Lagoons.",
-      image: "/financebanner.jpg",
-    },
-    {
-      title: "Strategic Finance & Business Advisory",
-      subtitle:
-        "Discover White-Washed Villages And Breathtaking Sunset Views Over The Sea.",
-      image: "/financebanner.jpg",
-    },
-  ];
+  useEffect(() => {
+    if (id) dispatch(getCarouselByCategoryId(id));
+  }, [dispatch, id]);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
+      setCurrentSlide((prev) =>
+        carouselByCategory.length
+          ? (prev + 1) % carouselByCategory.length
+          : 0
+      );
     }, 5000);
     return () => clearInterval(timer);
-  }, [slides.length]);
+  }, [carouselByCategory]);
 
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
+  const nextSlide = () =>
+    setCurrentSlide(
+      (prev) => (prev + 1) % (carouselByCategory?.length || 1)
+    );
   const prevSlide = () =>
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    setCurrentSlide(
+      (prev) =>
+        (prev - 1 + (carouselByCategory?.length || 1)) %
+        (carouselByCategory?.length || 1)
+    );
   const goToSlide = (index) => setCurrentSlide(index);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[400px]">
+        <p className="text-gray-500 text-lg">Loading carousel...</p>
+      </div>
+    );
+  }
+
+  if (!carouselByCategory?.length) {
+    return (
+      <div className="flex justify-center items-center h-[400px]">
+        <p className="text-gray-500 text-lg">
+          No carousel found for this category.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -44,9 +64,9 @@ export default function HomeBanner() {
       <div className="relative w-full h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[80vh] overflow-hidden mt-5">
         {/* SLIDES */}
         <div className="relative w-full h-full">
-          {slides.map((slide, index) => (
+          {carouselByCategory.map((slide, index) => (
             <div
-              key={index}
+              key={slide._id}
               className={`absolute inset-0 transition-opacity duration-1000 ${
                 index === currentSlide ? "opacity-100" : "opacity-0"
               }`}
@@ -94,7 +114,7 @@ export default function HomeBanner() {
 
         {/* DOTS */}
         <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 sm:gap-3">
-          {slides.map((_, index) => (
+          {carouselByCategory.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}

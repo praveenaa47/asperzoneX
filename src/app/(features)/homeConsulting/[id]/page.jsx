@@ -5,7 +5,8 @@ import Destinations from './components/Destinations'
 import WhyChooseUs from './components/WhyChooseUs'
 import Clients from './components/Clients'
 import AspireZonesFooter from '@/components/Footer'
-import Touch from './components/Touch'
+// import Touch from './components/Touch'
+
 
 function page() {
   return (
@@ -15,7 +16,7 @@ function page() {
       <Destinations/>
       <WhyChooseUs/>
       <Clients/>
-      <Touch/>
+      {/* <Touch/> */}
       <AspireZonesFooter/>
     </div>
   )
