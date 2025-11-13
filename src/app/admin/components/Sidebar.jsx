@@ -18,6 +18,8 @@ import {
   LetterTextIcon,
   Book,
   BaggageClaimIcon,
+  ListChecks,
+  Users,
 } from "lucide-react";
 import { FaSkyatlas } from "react-icons/fa";
 
@@ -46,8 +48,10 @@ const Sidebar = () => {
       ],
     },
     { name: "Testimonials", icon: <Users2 size={20} />, path: "/admin/testimonials" },
+    { name: "Enquiries", icon: <ListChecks size={20} />, path: "/admin/enquiries" },
     { name: "Carousels", icon: <Image size={20} />, path: "/admin/carousel" },
     { name: "Blogs", icon: <LetterTextIcon size={20} />, path: "/admin/blog" },
+    { name: "Users", icon: <Users size={20} />, path: "/admin/users" },
 
   ];
 

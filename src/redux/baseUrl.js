@@ -1,1 +1,1 @@
-export const BASE_URL = "https://aspirezonesx-backend.onrender.com/api"
+export const BASE_URL = "http://aspirezonesx.codeedextechnologies.com/api"

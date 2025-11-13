@@ -5,34 +5,34 @@ const PropertyModal = ({
   categories, 
   propertyTypes, 
   furnishedTypes, 
-  priceUnits, 
-  areaUnits,
+  pricePeriods,
+  bedTypes,
+  ownershipTypes,
   amenitiesList,
-  featuresList,
   onSave, 
   onClose 
 }) => {
   const [formData, setFormData] = useState({
-    title: '',
+    propertyName: '',
     description: '',
-    category: '',
+    location: {
+      country: '',
+      state: '',
+      district: '',
+      city: '',
+    },
     propertyType: '',
-    area: { value: '', unit: 'sqft' },
+    bedType: '',
     bedrooms: '',
     bathrooms: '',
+    yearBuilt: '',
+    lotSize: '',
     furnished: '',
-    price: { amount: '', unit: 'total' },
-    location: {
-      city: '',
-      country: '',
-      address: ''
-    },
-    floor: '',
-    totalFloors: '',
-    propertyAge: '',
-    parking: '',
+    price: { amount: '', period: 'monthly', negotiable: false },
+    email: '',
+    phone: '',
+    ownershipType: '',
     amenities: [],
-    features: [],
     images: []
   });
 
@@ -41,46 +41,73 @@ const PropertyModal = ({
 
   useEffect(() => {
     if (property) {
+      // Handle both string and object location formats
+      let locationData = {
+        country: '',
+        state: '',
+        district: '',
+        city: '',
+      };
+
+      if (typeof property.location === 'string') {
+        locationData.fullAddress = property.location;
+      } else if (property.location && typeof property.location === 'object') {
+        locationData = {
+          country: property.location.country || '',
+          state: property.location.state || '',
+          district: property.location.district || '',
+          city: property.location.city || '',
+          
+        };
+      }
+
       setFormData({
-        title: property.title || '',
+        propertyName: property.propertyName || '',
         description: property.description || '',
-        category: property.category?._id || '',
+        location: locationData,
         propertyType: property.propertyType || '',
-        area: property.area || { value: '', unit: 'sqft' },
+        bedType: property.bedType || '',
         bedrooms: property.bedrooms || '',
         bathrooms: property.bathrooms || '',
+        yearBuilt: property.yearBuilt || '',
+        lotSize: property.lotSize || '',
         furnished: property.furnished || '',
-        price: property.price || { amount: '', unit: 'total' },
-        location: property.location || { city: '', country: '', address: '' },
-        floor: property.floor || '',
-        totalFloors: property.totalFloors || '',
-        propertyAge: property.propertyAge || '',
-        parking: property.parking || '',
+        price: property.price || { amount: '', period: 'monthly', negotiable: false },
+        email: property.email || '',
+        phone: property.phone || '',
+        ownershipType: property.ownershipType || '',
         amenities: property.amenities || [],
-        features: property.features || [],
         images: property.images || []
       });
       setImagePreviews(property.images || []);
     }
   }, [property]);
 
-
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     
-    if (name.includes('.')) {
+    if (name.startsWith('location.')) {
+      const locationField = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        location: {
+          ...prev.location,
+          [locationField]: value
+        }
+      }));
+    } else if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setFormData(prev => ({
         ...prev,
         [parent]: {
           ...prev[parent],
-          [child]: value
+          [child]: type === 'checkbox' ? checked : value
         }
       }));
     } else {
       setFormData(prev => ({
         ...prev,
-        [name]: value
+        [name]: type === 'checkbox' ? checked : value
       }));
     }
     
@@ -140,7 +167,7 @@ const PropertyModal = ({
           setImagePreviews(prev => [...prev, ...newImagePreviews]);
           setFormData(prev => ({
             ...prev,
-            images: [...prev.images, ...newImagePreviews]
+            images: [...prev.images, ...files]
           }));
           setErrors(prev => ({
             ...prev,
@@ -154,28 +181,45 @@ const PropertyModal = ({
 
   const handleRemoveImage = (index) => {
     const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    const newImages = formData.images.filter((_, i) => i !== index);
+    
     setImagePreviews(newPreviews);
     setFormData(prev => ({
       ...prev,
-      images: newPreviews
+      images: newImages
     }));
   };
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.title.trim()) newErrors.title = 'Title is required';
-    if (!formData.description.trim()) newErrors.description = 'Description is required';
-    if (!formData.category) newErrors.category = 'Category is required';
+    if (!formData.propertyName.trim()) newErrors.propertyName = 'Property name is required';
+    if (!formData.location.city.trim()) newErrors['location.city'] = 'City is required';
+    if (!formData.location.state.trim()) newErrors['location.state'] = 'State is required';
+    if (!formData.location.country.trim()) newErrors['location.country'] = 'Country is required';
     if (!formData.propertyType) newErrors.propertyType = 'Property type is required';
-    if (!formData.area.value) newErrors['area.value'] = 'Area is required';
+    if (!formData.bedType) newErrors.bedType = 'Bed type is required';
     if (!formData.bedrooms) newErrors.bedrooms = 'Bedrooms is required';
     if (!formData.bathrooms) newErrors.bathrooms = 'Bathrooms is required';
+    if (!formData.yearBuilt) newErrors.yearBuilt = 'Year built is required';
+    if (!formData.lotSize.trim()) newErrors.lotSize = 'Lot size is required';
     if (!formData.furnished) newErrors.furnished = 'Furnished type is required';
     if (!formData.price.amount) newErrors['price.amount'] = 'Price is required';
-    if (!formData.location.city) newErrors['location.city'] = 'City is required';
-    if (!formData.location.country) newErrors['location.country'] = 'Country is required';
-    if (!formData.location.address) newErrors['location.address'] = 'Address is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
+    if (!formData.ownershipType) newErrors.ownershipType = 'Ownership type is required';
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.email && !emailRegex.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    // Phone validation
+    const phoneRegex = /^\+?[\d\s-()]{10,}$/;
+    if (formData.phone && !phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
+      newErrors.phone = 'Please enter a valid phone number';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -185,29 +229,14 @@ const PropertyModal = ({
     e.preventDefault();
     
     if (validateForm()) {
-      // Convert string numbers to actual numbers and ensure proper formatting
       const processedData = {
         ...formData,
-        area: {
-          ...formData.area,
-          value: parseFloat(formData.area.value)
-        },
         bedrooms: parseInt(formData.bedrooms),
         bathrooms: parseInt(formData.bathrooms),
+        yearBuilt: parseInt(formData.yearBuilt),
         price: {
           ...formData.price,
-          amount: parseFloat(formData.price.amount),
-          isNegotiable: false
-        },
-        floor: formData.floor ? parseInt(formData.floor) : undefined,
-        totalFloors: formData.totalFloors ? parseInt(formData.totalFloors) : undefined,
-        propertyAge: formData.propertyAge ? parseInt(formData.propertyAge) : undefined,
-        parking: formData.parking ? parseInt(formData.parking) : undefined,
-        // Ensure location fields are properly formatted
-        location: {
-          city: formData.location.city.trim(),
-          country: formData.location.country.trim(),
-          address: formData.location.address.trim()
+          amount: parseFloat(formData.price.amount)
         }
       };
       
@@ -240,69 +269,129 @@ const PropertyModal = ({
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-900">Basic Information</h3>
               
-              {/* Title */}
+              {/* Property Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Property Title *
+                  Property Name *
                 </label>
                 <input
                   type="text"
-                  name="title"
-                  value={formData.title}
+                  name="propertyName"
+                  value={formData.propertyName}
                   onChange={handleInputChange}
                   className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.title ? 'border-red-300' : 'border-gray-300'
+                    errors.propertyName ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="Enter property title"
+                  placeholder="Enter property name"
                 />
-                {errors.title && (
-                  <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                {errors.propertyName && (
+                  <p className="mt-1 text-sm text-red-600">{errors.propertyName}</p>
                 )}
               </div>
 
               {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description *
+                  Description
                 </label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={4}
-                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.description ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter property description"
                 />
-                {errors.description && (
-                  <p className="mt-1 text-sm text-red-600">{errors.description}</p>
-                )}
               </div>
 
-              {/* Category */}
+              {/* Location Fields */}
+              <div className="space-y-3">
+                <h4 className="text-md font-medium text-gray-900">Location Details</h4>
+                
+                
+
+                {/* City */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    City *
+                  </label>
+                  <input
+                    type="text"
+                    name="location.city"
+                    value={formData.location.city}
+                    onChange={handleInputChange}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors['location.city'] ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                    placeholder="Enter city"
+                  />
+                  {errors['location.city'] && (
+                    <p className="mt-1 text-sm text-red-600">{errors['location.city']}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Property Details & Location Continued */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900">Location & Details</h3>
+              
+              {/* Location Fields Continued */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* State */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    State *
+                  </label>
+                  <input
+                    type="text"
+                    name="location.state"
+                    value={formData.location.state}
+                    onChange={handleInputChange}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors['location.state'] ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                    placeholder="Enter state"
+                  />
+                  {errors['location.state'] && (
+                    <p className="mt-1 text-sm text-red-600">{errors['location.state']}</p>
+                  )}
+                </div>
+
+                {/* Country */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Country *
+                  </label>
+                  <input
+                    type="text"
+                    name="location.country"
+                    value={formData.location.country}
+                    onChange={handleInputChange}
+                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors['location.country'] ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                    placeholder="Enter country"
+                  />
+                  {errors['location.country'] && (
+                    <p className="mt-1 text-sm text-red-600">{errors['location.country']}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* District */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category *
+                  District
                 </label>
-                <select
-                  name="category"
-                  value={formData.category}
+                <input
+                  type="text"
+                  name="location.district"
+                  value={formData.location.district}
                   onChange={handleInputChange}
-                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.category ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                >
-                  <option value="">Select Category</option>
-                  {categories.map(category => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.category && (
-                  <p className="mt-1 text-sm text-red-600">{errors.category}</p>
-                )}
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter district (optional)"
+                />
               </div>
 
               {/* Property Type */}
@@ -329,315 +418,287 @@ const PropertyModal = ({
                   <p className="mt-1 text-sm text-red-600">{errors.propertyType}</p>
                 )}
               </div>
-            </div>
 
-            {/* Property Details */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900">Property Details</h3>
-              
-              {/* Area */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Area *
-                  </label>
-                  <input
-                    type="number"
-                    name="area.value"
-                    value={formData.area.value}
-                    onChange={handleInputChange}
-                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors['area.value'] ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Area value"
-                  />
-                  {errors['area.value'] && (
-                    <p className="mt-1 text-sm text-red-600">{errors['area.value']}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Unit
-                  </label>
-                  <select
-                    name="area.unit"
-                    value={formData.area.unit}
-                    onChange={handleInputChange}
-                    className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {areaUnits.map(unit => (
-                      <option key={unit.value} value={unit.value}>
-                        {unit.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Bedrooms & Bathrooms */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Bedrooms *
-                  </label>
-                  <input
-                    type="number"
-                    name="bedrooms"
-                    value={formData.bedrooms}
-                    onChange={handleInputChange}
-                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.bedrooms ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Number of bedrooms"
-                  />
-                  {errors.bedrooms && (
-                    <p className="mt-1 text-sm text-red-600">{errors.bedrooms}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Bathrooms *
-                  </label>
-                  <input
-                    type="number"
-                    name="bathrooms"
-                    value={formData.bathrooms}
-                    onChange={handleInputChange}
-                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.bathrooms ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Number of bathrooms"
-                  />
-                  {errors.bathrooms && (
-                    <p className="mt-1 text-sm text-red-600">{errors.bathrooms}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Furnished Type */}
+              {/* Bed Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Furnished Type *
+                  Bed Type *
                 </label>
                 <select
-                  name="furnished"
-                  value={formData.furnished}
+                  name="bedType"
+                  value={formData.bedType}
                   onChange={handleInputChange}
                   className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.furnished ? 'border-red-300' : 'border-gray-300'
+                    errors.bedType ? 'border-red-300' : 'border-gray-300'
                   }`}
                 >
-                  <option value="">Select Furnished Type</option>
-                  {furnishedTypes.map(type => (
+                  <option value="">Select Bed Type</option>
+                  {bedTypes.map(type => (
                     <option key={type.value} value={type.value}>
                       {type.label}
                     </option>
                   ))}
                 </select>
-                {errors.furnished && (
-                  <p className="mt-1 text-sm text-red-600">{errors.furnished}</p>
+                {errors.bedType && (
+                  <p className="mt-1 text-sm text-red-600">{errors.bedType}</p>
                 )}
-              </div>
-
-              {/* Price */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price *
-                  </label>
-                  <input
-                    type="number"
-                    name="price.amount"
-                    value={formData.price.amount}
-                    onChange={handleInputChange}
-                    className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors['price.amount'] ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Price amount"
-                  />
-                  {errors['price.amount'] && (
-                    <p className="mt-1 text-sm text-red-600">{errors['price.amount']}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price Unit
-                  </label>
-                  <select
-                    name="price.unit"
-                    value={formData.price.unit}
-                    onChange={handleInputChange}
-                    className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {priceUnits.map(unit => (
-                      <option key={unit.value} value={unit.value}>
-                        {unit.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
               </div>
             </div>
           </div>
 
-          {/* Location Information */}
+          {/* Property Specifications */}
           <div className="border-t pt-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Location Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Property Specifications</h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Bedrooms */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Bedrooms *
+                </label>
+                <input
+                  type="number"
+                  name="bedrooms"
+                  value={formData.bedrooms}
+                  onChange={handleInputChange}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.bedrooms ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                  placeholder="Number of bedrooms"
+                  min="1"
+                />
+                {errors.bedrooms && (
+                  <p className="mt-1 text-sm text-red-600">{errors.bedrooms}</p>
+                )}
+              </div>
+
+              {/* Bathrooms */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Bathrooms *
+                </label>
+                <input
+                  type="number"
+                  name="bathrooms"
+                  value={formData.bathrooms}
+                  onChange={handleInputChange}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.bathrooms ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                  placeholder="Number of bathrooms"
+                  min="1"
+                />
+                {errors.bathrooms && (
+                  <p className="mt-1 text-sm text-red-600">{errors.bathrooms}</p>
+                )}
+              </div>
+
+              {/* Year Built */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Year Built *
+                </label>
+                <input
+                  type="number"
+                  name="yearBuilt"
+                  value={formData.yearBuilt}
+                  onChange={handleInputChange}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.yearBuilt ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                  placeholder="Year built"
+                  min="1800"
+                  max="2030"
+                />
+                {errors.yearBuilt && (
+                  <p className="mt-1 text-sm text-red-600">{errors.yearBuilt}</p>
+                )}
+              </div>
+
+              {/* Lot Size */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Lot Size *
+                </label>
+                <input
+                  type="text"
+                  name="lotSize"
+                  value={formData.lotSize}
+                  onChange={handleInputChange}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.lotSize ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                  placeholder="e.g., 2000 sq ft"
+                />
+                {errors.lotSize && (
+                  <p className="mt-1 text-sm text-red-600">{errors.lotSize}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Furnished Type */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Furnished Type *
+              </label>
+              <select
+                name="furnished"
+                value={formData.furnished}
+                onChange={handleInputChange}
+                className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.furnished ? 'border-red-300' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Select Furnished Type</option>
+                {furnishedTypes.map(type => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+              {errors.furnished && (
+                <p className="mt-1 text-sm text-red-600">{errors.furnished}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Rest of the form remains the same for Price, Contact, Amenities, Images */}
+          {/* Price Information */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Price Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  City *
+                  Price Amount *
                 </label>
                 <input
-                  type="text"
-                  name="location.city"
-                  value={formData.location.city}
+                  type="number"
+                  name="price.amount"
+                  value={formData.price.amount}
                   onChange={handleInputChange}
                   className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors['location.city'] ? 'border-red-300' : 'border-gray-300'
+                    errors['price.amount'] ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="City"
+                  placeholder="Price amount"
+                  min="0"
+                  step="0.01"
                 />
-                {errors['location.city'] && (
-                  <p className="mt-1 text-sm text-red-600">{errors['location.city']}</p>
+                {errors['price.amount'] && (
+                  <p className="mt-1 text-sm text-red-600">{errors['price.amount']}</p>
                 )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Country *
+                  Price Period *
+                </label>
+                <select
+                  name="price.period"
+                  value={formData.price.period}
+                  onChange={handleInputChange}
+                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {pricePeriods.map(period => (
+                    <option key={period.value} value={period.value}>
+                      {period.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-end">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="price.negotiable"
+                    checked={formData.price.negotiable}
+                    onChange={handleInputChange}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Price is negotiable</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Information */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email *
                 </label>
                 <input
-                  type="text"
-                  name="location.country"
-                  value={formData.location.country}
+                  type="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleInputChange}
                   className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors['location.country'] ? 'border-red-300' : 'border-gray-300'
+                    errors.email ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="Country"
+                  placeholder="Contact email"
                 />
-                {errors['location.country'] && (
-                  <p className="mt-1 text-sm text-red-600">{errors['location.country']}</p>
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
                 )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Address *
+                  Phone *
                 </label>
                 <input
-                  type="text"
-                  name="location.address"
-                  value={formData.location.address}
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
                   onChange={handleInputChange}
                   className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors['location.address'] ? 'border-red-300' : 'border-gray-300'
+                    errors.phone ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="Full address"
+                  placeholder="Contact phone"
                 />
-                {errors['location.address'] && (
-                  <p className="mt-1 text-sm text-red-600">{errors['location.address']}</p>
+                {errors.phone && (
+                  <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Ownership Type *
+                </label>
+                <select
+                  name="ownershipType"
+                  value={formData.ownershipType}
+                  onChange={handleInputChange}
+                  className={`w-full text-black px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.ownershipType ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                >
+                  <option value="">Select Ownership Type</option>
+                  {ownershipTypes.map(type => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.ownershipType && (
+                  <p className="mt-1 text-sm text-red-600">{errors.ownershipType}</p>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Additional Details */}
+          {/* Amenities */}
           <div className="border-t pt-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Floor
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Amenities</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {amenitiesList.map(amenity => (
+                <label key={amenity} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.amenities.includes(amenity)}
+                    onChange={(e) => handleArrayChange('amenities', amenity, e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+                  />
+                  <span className="text-sm text-gray-700">{amenity}</span>
                 </label>
-                <input
-                  type="number"
-                  name="floor"
-                  value={formData.floor}
-                  onChange={handleInputChange}
-                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Floor number"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Total Floors
-                </label>
-                <input
-                  type="number"
-                  name="totalFloors"
-                  value={formData.totalFloors}
-                  onChange={handleInputChange}
-                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Total floors"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Property Age (years)
-                </label>
-                <input
-                  type="number"
-                  name="propertyAge"
-                  value={formData.propertyAge}
-                  onChange={handleInputChange}
-                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Age in years"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Parking Spaces
-                </label>
-                <input
-                  type="number"
-                  name="parking"
-                  value={formData.parking}
-                  onChange={handleInputChange}
-                  className="w-full text-black px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Parking spaces"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Amenities & Features */}
-          <div className="border-t pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Amenities */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Amenities</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {amenitiesList.map(amenity => (
-                    <label key={amenity} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.amenities.includes(amenity)}
-                        onChange={(e) => handleArrayChange('amenities', amenity, e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-                      />
-                      <span className="text-sm text-gray-700">{amenity}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Features */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Features</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {featuresList.map(feature => (
-                    <label key={feature} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.features.includes(feature)}
-                        onChange={(e) => handleArrayChange('features', feature, e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-                      />
-                      <span className="text-sm text-gray-700">{feature}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 

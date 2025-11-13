@@ -52,7 +52,7 @@ const CarManagement = () => {
 
   const [brands, setBrands] = useState([
     'Toyota', 'Honda', 'BMW', 'Mercedes-Benz', 'Audi', 'Ford',
-    'Chevrolet', 'Nissan', 'Hyundai', 'Kia', 'Volkswagen', 'Mazda'
+    'Chevrolet', 'Nissan', 'Hyundai', 'Kia', 'Volkswagen', 'Mazda' , 'Maruti Suzuki', 'Tata', 'Mahindra'
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
