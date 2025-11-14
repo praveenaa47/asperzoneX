@@ -13,6 +13,26 @@ export const getEstateproperty = createAsyncThunk(
     }
   }
 );
+
+export const getUserEstateproperty = createAsyncThunk(
+  "property/getUserEstateproperty",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.get(`${BASE_URL}/properties/admin/requests`,
+        {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to fetch properties");
+    }
+  }
+);
+
 export const getEstatepropertyById = createAsyncThunk(
   "property/getEstatepropertyById",
   async (id, { rejectWithValue }) => {
@@ -103,6 +123,20 @@ const realestatePropertSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+
+      .addCase(getUserEstateproperty.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getUserEstateproperty.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload.data || [];
+        state.pagination = action.payload.pagination || null;
+      })
+      .addCase(getUserEstateproperty.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       .addCase(getEstatepropertyById.fulfilled, (state, action) => {
         state.loading = false;
         state.selectedProperty = action.payload.data;

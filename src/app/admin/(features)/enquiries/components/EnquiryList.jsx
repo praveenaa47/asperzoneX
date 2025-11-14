@@ -46,24 +46,44 @@ const EnquiryList = ({ enquiries, onView, onDelete, onStatusUpdate }) => {
     return enquiry.category?.name || 'General Enquiry';
   };
 
-  const getLocationInfo = (enquiry) => {
-    if (enquiry.country && enquiry.city) {
-      return `${enquiry.city}, ${enquiry.country}`;
-    }
-    if (enquiry.destination) {
-      return enquiry.destination;
-    }
-    if (enquiry.hotel_location) {
-      return enquiry.hotel_location;
-    }
-    if (enquiry.student_location) {
-      return enquiry.student_location;
-    }
-    if (enquiry.innovate_location) {
-      return enquiry.innovate_location;
-    }
-    return 'Not specified';
-  };
+ const getLocationInfo = (enquiry) => {
+  // If direct `location` exists (Car enquiries, simple forms)
+  if (enquiry.location) {
+    return enquiry.location;
+  }
+
+  // Travel enquiries (destination-based)
+  if (enquiry.destination) {
+    return enquiry.destination;
+  }
+
+  if (enquiry.hotel_location) {
+    return enquiry.hotel_location;
+  }
+
+  // Student enquiry
+  if (enquiry.student_location) {
+    return enquiry.student_location;
+  }
+
+  // Innovate enquiry
+  if (enquiry.innovate_location) {
+    return enquiry.innovate_location;
+  }
+
+  // Flight enquiry (oneway / roundtrip)
+  if (enquiry.from && enquiry.to) {
+    return `${enquiry.from} → ${enquiry.to}`;
+  }
+
+  // Multi-city flights
+  if (enquiry.multiCityRoutes?.length > 0) {
+    return enquiry.multiCityRoutes.map(r => `${r.from} → ${r.to}`).join(", ");
+  }
+
+  return "Not specified";
+};
+
 
   const getEnquiryDetails = (enquiry) => {
     const details = [];
