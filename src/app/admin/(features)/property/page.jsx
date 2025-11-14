@@ -7,11 +7,14 @@ import { getMaincategory } from "@/redux/slices/MainCategorySlice";
 import { addEstateproperty, deleteEstateproperty, getEstateproperty, updateEstateproperty } from '@/redux/slices/realestateProprtySlice';
 import DeleteConfirmationModal from '../../components/DeleteModal';
 import { useToast } from '../../components/Toast';
+import PropertyViewModal from './components/PropertyViewModal';
 
 const PropertyManagement = () => {
   const dispatch = useDispatch();
   const { data: properties, loading, error } = useSelector((state) => state.property);
   const { data: categoryData } = useSelector((state) => state.category);
+  const [viewPropertyId, setViewPropertyId] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   const [categories, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,9 +28,7 @@ const PropertyManagement = () => {
   const [deleteId, setDeleteId] = useState(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-    const { addToast } = useToast();
-
-
+  const { addToast } = useToast();
 
   // Load properties and categories on component mount
   useEffect(() => {
@@ -41,11 +42,15 @@ const PropertyManagement = () => {
     }
   }, [categoryData]);
 
+  const handleViewProperty = (id) => {
+    setViewPropertyId(id);
+    setIsViewModalOpen(true);
+  };
+
   // Filter properties based on search and filters
   const filteredProperties = properties.filter(property => {
-    const matchesSearch = property.title?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-      property.location?.city?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-      property.location?.address?.toLowerCase().includes(filters.searchTerm.toLowerCase());
+    const matchesSearch = property.propertyName?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      property.location?.toLowerCase().includes(filters.searchTerm.toLowerCase());
 
     const matchesStatus = filters.statusFilter === 'all' || property.isActive === (filters.statusFilter === 'active');
     const matchesPropertyType = filters.propertyTypeFilter === 'all' || property.propertyType === filters.propertyTypeFilter;
@@ -64,77 +69,67 @@ const PropertyManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleSaveProperty = async (propertyData) => {
-    try {
-      const formData = new FormData();
+ const handleSaveProperty = async (propertyData) => {
+  try {
+    const formData = new FormData();
 
-      // Append basic fields
-      formData.append('title', propertyData.title);
-      formData.append('description', propertyData.description);
-      formData.append('category', propertyData.category);
-      formData.append('propertyType', propertyData.propertyType);
-      formData.append('bedrooms', propertyData.bedrooms.toString());
-      formData.append('bathrooms', propertyData.bathrooms.toString());
-      formData.append('furnished', propertyData.furnished);
-      formData.append('productType', 'Property'); // Required field
+    // Append basic fields
+    formData.append('propertyName', propertyData.propertyName);
+    formData.append('description', propertyData.description);
+    formData.append('propertyType', propertyData.propertyType);
+    formData.append('bedType', propertyData.bedType);
+    formData.append('bedrooms', propertyData.bedrooms.toString());
+    formData.append('bathrooms', propertyData.bathrooms.toString());
+    formData.append('yearBuilt', propertyData.yearBuilt.toString());
+    formData.append('lotSize', propertyData.lotSize);
+    formData.append('furnished', propertyData.furnished);
+    formData.append('email', propertyData.email);
+    formData.append('phone', propertyData.phone);
+    formData.append('ownershipType', propertyData.ownershipType);
 
-      // Append area object
-      formData.append('area[value]', propertyData.area.value.toString());
-      formData.append('area[unit]', propertyData.area.unit);
+    // Append location object
+    formData.append('location[country]', propertyData.location.country);
+    formData.append('location[state]', propertyData.location.state);
+    formData.append('location[district]', propertyData.location.district);
+    formData.append('location[city]', propertyData.location.city);
 
-      // Append price object
-      formData.append('price[amount]', propertyData.price.amount.toString());
-      formData.append('price[unit]', propertyData.price.unit);
-      formData.append('price[isNegotiable]', 'false');
+    // Append price object
+    formData.append('price[amount]', propertyData.price.amount.toString());
+    formData.append('price[period]', propertyData.price.period);
+    formData.append('price[negotiable]', propertyData.price.negotiable.toString());
 
-      // Append location object
-      formData.append('location[city]', propertyData.location.city);
-      formData.append('location[country]', propertyData.location.country);
-      formData.append('location[address]', propertyData.location.address);
+    // Append amenities as array
+    propertyData.amenities.forEach((amenity, index) => {
+      formData.append(`amenities[${index}]`, amenity);
+    });
 
-      // Append optional fields if they exist
-      if (propertyData.floor) formData.append('floor', propertyData.floor.toString());
-      if (propertyData.totalFloors) formData.append('totalFloors', propertyData.totalFloors.toString());
-      if (propertyData.propertyAge) formData.append('propertyAge', propertyData.propertyAge.toString());
-      if (propertyData.parking) formData.append('parking', propertyData.parking.toString());
-
-      // Append amenities as array
-      propertyData.amenities.forEach((amenity, index) => {
-        formData.append(`amenities[${index}]`, amenity);
-      });
-
-      // Append features as array
-      propertyData.features.forEach((feature, index) => {
-        formData.append(`features[${index}]`, feature);
-      });
-
-      // Handle images - append new files
-      propertyData.images.forEach((image, index) => {
-        if (typeof image !== 'string') { // Only append new files, not URLs
-          formData.append('images', image);
-        }
-      });
-
-      if (editingProperty) {
-        // Update existing property
-        await dispatch(updateEstateproperty({
-          id: editingProperty._id,
-          formData
-        })).unwrap();
-        addToast("success", "Property updated successfully ✅");
-      } else {
-        // Add new property
-        await dispatch(addEstateproperty(formData)).unwrap();
-        addToast("success", "Property added successfully ✅");
+    // Handle images - append new files
+    propertyData.images.forEach((image, index) => {
+      if (typeof image !== 'string') { 
+        formData.append('images', image);
       }
+    });
 
-      setIsModalOpen(false);
-      setEditingProperty(null);
-    } catch (error) {
-      console.error('Failed to save property:', error);
-      addToast("error", "Failed to save property ❌");
+    if (editingProperty) {
+      // Update existing property
+      await dispatch(updateEstateproperty({
+        id: editingProperty._id,
+        formData
+      })).unwrap();
+      addToast("success", "Property updated successfully ✅");
+    } else {
+      // Add new property
+      await dispatch(addEstateproperty(formData)).unwrap();
+      addToast("success", "Property added successfully ✅");
     }
-  };
+
+    setIsModalOpen(false);
+    setEditingProperty(null);
+  } catch (error) {
+    console.error('Failed to save property:', error);
+    addToast("error", "Failed to save property ❌");
+  }
+};
 
   const handleDeleteProperty = (id) => {
     setDeleteId(id);
@@ -155,7 +150,6 @@ const PropertyManagement = () => {
       setDeleteLoading(false);
     }
   };
-
 
   const handleStatusChange = async (id, newStatus) => {
     try {
@@ -197,30 +191,31 @@ const PropertyManagement = () => {
   const furnishedTypes = [
     { value: 'unfurnished', label: 'Unfurnished' },
     { value: 'semi-furnished', label: 'Semi-Furnished' },
-    { value: 'fully-furnished', label: 'Fully Furnished' }
+    { value: 'furnished', label: 'Fully Furnished' }
   ];
 
-  const priceUnits = [
-    { value: 'total', label: 'Total Price' },
-    { value: 'monthly', label: 'Monthly Rent' },
-    { value: 'yearly', label: 'Yearly Rent' }
+  const pricePeriods = [
+    { value: 'monthly', label: 'Monthly' },
+    { value: 'yearly', label: 'Yearly' },
+    { value: 'total', label: 'Total Price' }
   ];
 
-  const areaUnits = [
-    { value: 'sqft', label: 'Square Feet' },
-    { value: 'sqm', label: 'Square Meters' },
-    { value: 'yards', label: 'Square Yards' }
+  const bedTypes = [
+    { value: 'single', label: 'Single' },
+    { value: 'double', label: 'Double' },
+    { value: 'king', label: 'King' },
+    { value: 'queen', label: 'Queen' }
+  ];
+
+  const ownershipTypes = [
+    { value: 'Owner', label: 'Owner' },
+    { value: 'Dealer', label: 'Dealer' },
+    
   ];
 
   const amenitiesList = [
     'Swimming Pool', 'Gym', 'Parking', 'Security', 'Concierge',
     'Garden', 'Playground', 'Clubhouse', 'Elevator', 'Pet Friendly'
-  ];
-
-  const featuresList = [
-    'AC', 'Heating', 'WiFi', 'Balcony', 'Laundry', 'Smart Home',
-    'Sea View', 'City View', 'Fitted Kitchen', 'Walk-in Closet',
-    'Hardwood Floors', 'Marble Floors', 'Central AC'
   ];
 
   // Show loading state
@@ -335,6 +330,7 @@ const PropertyManagement = () => {
           onDelete={handleDeleteProperty}
           onStatusChange={handleStatusChange}
           onFeaturedToggle={handleFeaturedToggle}
+          onView={handleViewProperty}
         />
 
         {/* Modal */}
@@ -344,14 +340,28 @@ const PropertyManagement = () => {
             categories={categories}
             propertyTypes={propertyTypes}
             furnishedTypes={furnishedTypes}
-            priceUnits={priceUnits}
-            areaUnits={areaUnits}
+            pricePeriods={pricePeriods}
+            bedTypes={bedTypes}
+            ownershipTypes={ownershipTypes}
             amenitiesList={amenitiesList}
-            featuresList={featuresList}
             onSave={handleSaveProperty}
             onClose={() => {
               setIsModalOpen(false);
               setEditingProperty(null);
+            }}
+          />
+        )}
+        {isViewModalOpen && (
+          <PropertyViewModal
+            propertyId={viewPropertyId}
+            isOpen={isViewModalOpen}
+            onClose={() => {
+              setIsViewModalOpen(false);
+              setViewPropertyId(null);
+            }}
+            onEdit={(property) => {
+              setIsViewModalOpen(false);
+              handleEditProperty(property);
             }}
           />
         )}

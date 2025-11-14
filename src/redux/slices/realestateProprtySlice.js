@@ -17,7 +17,12 @@ export const getEstatepropertyById = createAsyncThunk(
   "property/getEstatepropertyById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/properties/${id}`);
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.get(`${BASE_URL}/properties/${id}` , {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Failed to fetch property");
