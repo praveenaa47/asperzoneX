@@ -3,18 +3,23 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CarList from "./components/CarList";
 import CarModal from "./components/CarModel";
-import { addCar, deleteCar, getAllCars, getCarById, updateCar } from "@/redux/slices/carSlice";
+import { addCar, deleteCar, getAllCars, getAllUserCars, getCarById, updateCar } from "@/redux/slices/carSlice";
 import { getMaincategory } from "@/redux/slices/MainCategorySlice";
 import DeleteConfirmationModal from "../../components/DeleteModal";
 import { useToast } from "../../components/Toast";
 import { useRouter } from "next/navigation";
 import SingleCarModal from "./components/SingleCarModal";
+import { Bell } from "lucide-react";
 
 const CarManagement = () => {
   const dispatch = useDispatch();
   const { carList, loading, error, selectedCar } = useSelector((state) => state.cars);
-
+const { carList: allCars } = useSelector((state) => state.cars);
   const { data: categoryData } = useSelector((state) => state.category);
+  const [pendingCars, setPendingCars] = useState([]);
+
+  
+  
 
   const [categories, setCategories] = useState([]);
   const { addToast } = useToast();
@@ -42,7 +47,19 @@ const CarManagement = () => {
   useEffect(() => {
     dispatch(getAllCars());
     dispatch(getMaincategory());
+    dispatch(getAllUserCars());  
   }, [dispatch]);
+
+  useEffect(() => {
+  dispatch(getAllUserCars()).then((res) => {
+    if (res.payload?.data) {
+      setPendingCars(res.payload.data);  // store pending approvals only
+    }
+  });
+}, [dispatch]);
+
+const pendingCount = pendingCars?.length || 0;
+
 
   useEffect(() => {
     if (categoryData?.length > 0) {
@@ -337,11 +354,19 @@ const CarManagement = () => {
           </div>
 
           {/* View Approvals Button */}
-          <button
+         <button
             onClick={handleNavigate}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 whitespace-nowrap"
+            className="relative px-4 py-2 border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 flex items-center gap-2 transition"
           >
+            {/* Icon */}
+            <Bell className="w-5 h-5" />
+
             View Approvals
+
+            {/* Badge */}
+            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+             {pendingCount}
+            </span>
           </button>
         </div>
 

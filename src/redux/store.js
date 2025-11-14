@@ -14,6 +14,7 @@ import jobReducer from "./slices/jobSlice";
 import wishlistReducer from "./slices/wishlistSlice";
 import enquiryReducer from "./slices/enquirySlice";
 import userSlice from "./slices/userSlice";
+import overviewReducer from "./slices/overviewSlice";
 
 export const store = configureStore({
   reducer: {
@@ -31,6 +32,7 @@ export const store = configureStore({
     jobs: jobReducer,
     wishlist: wishlistReducer,
     enquiries: enquiryReducer,
-    users : userSlice
+    users : userSlice,
+    overview : overviewReducer,
   },
 });

@@ -20,7 +20,7 @@ export default function AdminLogin() {
     const result = await dispatch(adminLogin({ email, password }));
 
     if (result.meta.requestStatus === "fulfilled") {
-      router.push("/admin"); 
+      router.push("/admin/dashboard"); 
     }
   };
 
