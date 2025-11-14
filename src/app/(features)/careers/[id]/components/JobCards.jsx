@@ -1,5 +1,5 @@
 "use client";
-import { getJobs } from "@/redux/slices/jobSlice";
+import {  getUserJobs } from "@/redux/slices/jobSlice";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,7 +12,7 @@ const JobListings = () => {
 const router = useRouter();
 
   useEffect(() => {
-    dispatch(getJobs());
+    dispatch(getUserJobs());
   }, [dispatch]);
 
   if (loading) {

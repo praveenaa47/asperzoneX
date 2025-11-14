@@ -1,33 +1,19 @@
-import React from 'react';
-import { Clock } from 'lucide-react';
+"use client";
+import React, { useEffect } from "react";
+import { Clock } from "lucide-react";
+import { getBlogs } from "@/redux/slices/blogSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function Blogsdetails() {
-  const articles = [
-    {
-      id: 1,
-      image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop',
-      title: 'Top 5 Tips for Buying Your First Home',
-      description: 'Make your first property purchase smooth and stress-free with these practical tips.',
-      readTime: '4 Min',
-      date: 'August 19, 2022'
-    },
-    {
-      id: 2,
-      image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop',
-      title: 'Real Estate Trends to Watch in 2025',
-      description: 'Stay ahead with insights on the latest market shifts and opportunities.',
-      readTime: '4 Min',
-      date: 'August 19, 2022'
-    },
-    {
-      id: 3,
-      image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop',
-      title: 'How to Increase Your Property Value with Simple Upgrades',
-      description: 'Stay ahead with insights on the latest market shifts and opportunities.',
-      readTime: '4 Min',
-      date: 'August 19, 2022'
-    }
-  ];
+  const dispatch = useDispatch();
+  const { data: blogs, loading, error } = useSelector((state) => state.blogs);
+  const router = useRouter();
+
+  useEffect(() => {
+    dispatch(getBlogs());
+  }, [dispatch]);
 
   return (
     <div className="w-full  px-4 py-12">
@@ -36,18 +22,25 @@ export default function Blogsdetails() {
         Aspire Insights
       </h1>
 
+      {loading && (
+        <p className="text-center text-gray-600 text-lg">Loading blogs...</p>
+      )}
+      {error && (
+        <p className="text-center text-red-600 text-lg">Failed to load blogs</p>
+      )}
+
       {/* Articles List */}
       <div className="space-y-6">
-        {articles.map((article) => (
+        {blogs?.map((article) => (
           <div
-            key={article.id}
+            key={article._id}
             className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-6"
           >
             <div className="flex flex-col md:flex-row gap-6">
               {/* Image */}
               <div className="flex-shrink-0">
                 <img
-                  src={article.image}
+                  src={article.coverImage}
                   alt={article.title}
                   className="w-full md:w-40 h-40 object-cover rounded-lg"
                 />
@@ -60,22 +53,29 @@ export default function Blogsdetails() {
                     {article.title}
                   </h2>
                   <p className="text-gray-600 text-sm md:text-base mb-4">
-                    {article.description}
+                    {article.subtitle || article.introduction}{" "}
                   </p>
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
-                      <span>{article.readTime}</span>
+                      <span>{article.readTime || "5 min"}</span>{" "}
                     </div>
                     <span>•</span>
-                    <span>{article.date}</span>
+                    <span>
+                      {new Date(article.publishDate).toLocaleDateString(
+                        "en-IN"
+                      )}
+                    </span>{" "}
                   </div>
                 </div>
               </div>
 
               {/* Button */}
               <div className="flex items-center md:items-start">
-                <button className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-300">
+                <button 
+                            onClick={()=>router.push(`/blog-details/${article._id}`)}
+
+                className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-300">
                   Read More
                 </button>
               </div>

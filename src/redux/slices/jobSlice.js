@@ -18,6 +18,20 @@ export const getJobs = createAsyncThunk(
     }
   }
 );
+// usergetjob
+export const getUserJobs = createAsyncThunk(
+  "jobs/getUserJobs",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/jobs/user`, {
+       
+      });
+      return response.data; 
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to load jobs");
+    }
+  }
+);
 
 export const getSingleJob = createAsyncThunk(
   "jobs/getSingleJob",
@@ -37,6 +51,25 @@ export const addJob = createAsyncThunk(
     try {
       const token = localStorage.getItem("adminToken");
       const response = await axios.post(`${BASE_URL}/jobs`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to add job");
+    }
+  }
+);
+
+// userside add
+export const addUserJob = createAsyncThunk(
+  "jobs/addUserJob",
+  async (formData, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await axios.post(`${BASE_URL}/jobs/user`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -111,6 +144,21 @@ const jobSlice = createSlice({
         state.error = action.payload;
       })
 
+      // getuser
+      .addCase(getUserJobs.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getUserJobs.fulfilled, (state, action) => {
+        state.loading = false;
+        state.jobs = action.payload.data || [];
+        state.pagination = action.payload.pagination || null;
+      })
+      .addCase(getUserJobs.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       
       .addCase(getSingleJob.pending, (state) => {
         state.loading = true;
@@ -137,6 +185,22 @@ const jobSlice = createSlice({
         }
       })
       .addCase(addJob.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      
+      .addCase(addUserJob.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addUserJob.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload.data) {
+          state.jobs.push(action.payload.data);
+        }
+      })
+      .addCase(addUserJob.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

@@ -17,13 +17,13 @@ function Features({property}) {
                 <span className="text-gray-600 text-sm md:text-base">Property type</span>
               </div>
               <div className="py-4 px-0 md:px-4 text-right md:text-left">
-                <span className="text-gray-900 font-semibold text-sm md:text-base">{property.propertyType}</span>
+                <span className="text-gray-900 font-semibold text-sm md:text-base capitalize">{property?.propertyType || "Residential"}</span>
               </div>
               <div className="py-4 px-0 md:px-4">
-                <span className="text-gray-600 text-sm md:text-base">Owner ship</span>
+                <span className="text-gray-600 text-sm md:text-base">Ownership</span>
               </div>
               <div className="py-4 px-0 md:px-4 text-right md:text-left">
-                <span className="text-gray-900 font-semibold text-sm md:text-base">Freehold</span>
+                <span className="text-gray-900 font-semibold text-sm md:text-base capitalize">{property?.ownershipType || "Freehold"}</span>
               </div>
             </div>
 
@@ -33,13 +33,13 @@ function Features({property}) {
                 <span className="text-gray-600 text-sm md:text-base">Year built</span>
               </div>
               <div className="py-4 px-0 md:px-4 text-right md:text-left">
-                <span className="text-gray-900 font-semibold text-sm md:text-base">2019</span>
+                <span className="text-gray-900 font-semibold text-sm md:text-base">{property?.yearBuilt || "2019"}</span>
               </div>
               <div className="py-4 px-0 md:px-4">
-                <span className="text-gray-600 text-sm md:text-base">Floors</span>
+                <span className="text-gray-600 text-sm md:text-base">Furnished</span>
               </div>
               <div className="py-4 px-0 md:px-4 text-right md:text-left">
-                <span className="text-gray-900 font-semibold text-sm md:text-base">{property.totalFloors}</span>
+                <span className="text-gray-900 font-semibold text-sm md:text-base capitalize">{property?.furnished || "Furnished"}</span>
               </div>
             </div>
 
@@ -52,10 +52,10 @@ function Features({property}) {
                 <span className="text-gray-900 font-semibold text-sm md:text-base">Ready to Move</span>
               </div>
               <div className="py-4 px-0 md:px-4">
-                <span className="text-gray-600 text-sm md:text-base">Facing</span>
+                <span className="text-gray-600 text-sm md:text-base">Bed Type</span>
               </div>
               <div className="py-4 px-0 md:px-4 text-right md:text-left">
-                <span className="text-gray-900 font-semibold text-sm md:text-base">East</span>
+                <span className="text-gray-900 font-semibold text-sm md:text-base capitalize">{property?.bedType || "Double"}</span>
               </div>
             </div>
           </div>

@@ -10,10 +10,15 @@ import Filters from "./components/Filter";
 import CarList from "./components/CarLists";
 import { getAllCars } from "@/redux/slices/carSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { AddtoWishlist, getWishlist, removeWishlist } from "@/redux/slices/wishlistSlice";
+import { useToast } from "@/components/UserToast";
+
 
 function page() {
   const dispatch = useDispatch();
   const { carList, loading, error } = useSelector((state) => state.cars);
+   const { items: wishlistItems } = useSelector((state) => state.wishlist);
+   const { addToast } = useToast();
 
   useEffect(() => {
     dispatch(getAllCars());
@@ -38,17 +43,47 @@ function page() {
   const [favorites, setFavorites] = useState([]);
   const [sortOption, setSortOption] = useState("newest");
 
+    useEffect(() => {
+    dispatch(getAllCars());
+    dispatch(getWishlist());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (wishlistItems?.length > 0) {
+      const ids = wishlistItems.map((item) => item.itemId?._id || item.itemId);
+      setFavorites(ids);
+    }
+  }, [wishlistItems]);
+
+   const toggleFavorite = async (carId) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      addToast("error", "Please log in to manage your wishlist.");
+      return;
+    }
+
+    const isFavorite = favorites.includes(carId);
+
+     if (isFavorite) {
+      await dispatch(removeWishlist(carId));
+      setFavorites((prev) => prev.filter((id) => id !== carId));
+      addToast("success", "Removed from wishlist ❌");
+    } else {
+      const payload = {
+        itemId: carId,
+        itemType: "Car",
+      };
+      await dispatch(AddtoWishlist(payload));
+      setFavorites((prev) => [...prev, carId]);
+      addToast("success", "Added to wishlist ✅");
+    }
+  };
+
   const toggleFilter = (filter) => {
     setExpandedFilters((prev) => ({ ...prev, [filter]: !prev[filter] }));
   };
 
-  const toggleFavorite = (carId) => {
-    setFavorites((prev) =>
-      prev.includes(carId)
-        ? prev.filter((id) => id !== carId)
-        : [...prev, carId]
-    );
-  };
+
 
   const handleBrandChange = (brand) => {
     setSelectedBrands((prev) =>
@@ -58,8 +93,7 @@ function page() {
 
   const handleSortChange = (option) => {
     setSortOption(option);
-    // You can implement sorting logic here
-  };
+    };
 
   if (loading)
     return (

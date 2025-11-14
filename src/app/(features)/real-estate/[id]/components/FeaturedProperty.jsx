@@ -4,24 +4,58 @@ import { Heart, MapPin, Bed, Bath, Maximize, ArrowRight } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { getEstateproperty } from "@/redux/slices/realestateProprtySlice";
 import { useRouter } from "next/navigation";
+import {
+  AddtoWishlist,
+  getWishlist,
+  removeWishlist,
+} from "@/redux/slices/wishlistSlice";
+import { useToast } from "@/components/UserToast";
 
 export default function FeaturedProperties() {
   const [favorites, setFavorites] = useState([]);
   const dispatch = useDispatch();
   const { data, loading, error } = useSelector((state) => state.property);
+  const { items: wishlistItems } = useSelector((state) => state.wishlist);
   const router = useRouter();
+  const { addToast } = useToast();
 
   useEffect(() => {
     dispatch(getEstateproperty());
   }, [dispatch]);
 
+  useEffect(() => {
+    if (wishlistItems?.length > 0) {
+      const ids = wishlistItems.map((item) => item.itemId?._id || item.itemId);
+      setFavorites(ids);
+    }
+  }, [wishlistItems]);
+
   const featuredProperties =
     data?.filter((item) => item.isFeatured === true) || [];
 
-  const toggleFavorite = (id) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((favId) => favId !== id) : [...prev, id]
-    );
+  const toggleFavorite = async (propertyId) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      addToast("error", "Please log in to manage your wishlist.");
+      return;
+    }
+    const isFavorite = favorites.includes(propertyId);
+
+    if (isFavorite) {
+      // remove from wishlist
+      await dispatch(removeWishlist(propertyId));
+      setFavorites((prev) => prev.filter((id) => id !== propertyId));
+      addToast("success", "Removed from wishlist...❌");
+    } else {
+      // add to wishlist
+      const payload = {
+        itemId: propertyId,
+        itemType: "Property",
+      };
+      await dispatch(AddtoWishlist(payload));
+      setFavorites((prev) => [...prev, propertyId]);
+      addToast("success", "Added to wishlist...✅");
+    }
   };
 
   if (loading) {
@@ -57,7 +91,7 @@ export default function FeaturedProperties() {
         Featured Properties
       </h2>
 
-      {/* Grid - 2x2 on mobile, 2 columns on tablet, 4 columns on desktop */}
+      {}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-10 max-w-7xl mx-auto">
         {featuredProperties.map((property) => (
           <div
@@ -65,13 +99,13 @@ export default function FeaturedProperties() {
             onClick={() => router.push(`/realestate-details/${property._id}`)}
             className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
           >
-            {/* Image */}
+            {}
             <div className="relative h-36 sm:h-44 md:h-48">
-             <img
-  src={property.images?.[0] || "/default-property.jpg"}
-  alt={property.propertyName}
-  className="w-full h-full object-cover"
-/>
+              <img
+                src={property.images?.[0] || "/default-property.jpg"}
+                alt={property.propertyName}
+                className="w-full h-full object-cover"
+              />
 
               {property.forSale && (
                 <span className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-gray-800 text-white text-[10px] sm:text-[11px] px-2 py-1 rounded">
@@ -82,33 +116,32 @@ export default function FeaturedProperties() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleFavorite(property.id);
+                  toggleFavorite(property._id);
                 }}
                 className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all ${
-                  favorites.includes(property.id)
+                  favorites.includes(property._id)
                     ? "bg-red-500 text-white"
                     : "bg-white text-gray-700 hover:bg-gray-100"
                 }`}
               >
                 <Heart
                   className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
-                    favorites.includes(property.id) ? "fill-current" : ""
+                    favorites.includes(property._id) ? "fill-current" : ""
                   }`}
                 />
               </button>
             </div>
 
-            {/* Content */}
+            {}
             <div className="p-3 sm:p-4">
               <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1 line-clamp-1">
                 {property.propertyName}
               </h3>
 
-          <div className="flex items-center text-gray-600 text-[10px] sm:text-xs mb-2 sm:mb-3">
-  <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 flex-shrink-0" />
-  <span className="line-clamp-1">{property.location}</span>
-</div>
-
+              <div className="flex items-center text-gray-600 text-[10px] sm:text-xs mb-2 sm:mb-3">
+                <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 flex-shrink-0" />
+                <span className="line-clamp-1">{property.location?.formatted}</span>
+              </div>
 
               <div className="flex items-center gap-2 mb-2 sm:mb-3 text-[10px] sm:text-xs">
                 <span className="bg-blue-100 text-blue-700 font-medium px-2 sm:px-3 py-1 rounded-full">
@@ -158,7 +191,7 @@ export default function FeaturedProperties() {
         ))}
       </div>
 
-      {/* Button */}
+      {}
       <div className="flex justify-center">
         <button className="flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3 border-2 border-gray-800 text-gray-800 font-semibold rounded-md hover:bg-gray-800 hover:text-white transition-colors text-sm sm:text-base">
           View all

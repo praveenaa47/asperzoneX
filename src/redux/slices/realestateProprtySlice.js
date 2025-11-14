@@ -17,7 +17,7 @@ export const getEstatepropertyById = createAsyncThunk(
   "property/getEstatepropertyById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${BASE_URL}/properties/${id}`);
+      const response = await axios.get(`${BASE_URL}/properties/user/${id}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Failed to fetch property");
@@ -41,6 +41,26 @@ export const addEstateproperty = createAsyncThunk(
     }
   }
 );
+
+// user
+export const addUserEstateproperty = createAsyncThunk(
+  "property/addUserEstateproperty",
+  async (formData, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await axios.post(`${BASE_URL}/properties/user`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        }
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to add property");
+    }
+  }
+);
+
 export const updateEstateproperty = createAsyncThunk(
   "property/updateEstateproperty",
   async ({ id, formData }, { rejectWithValue }) => {
@@ -58,6 +78,7 @@ export const updateEstateproperty = createAsyncThunk(
     }
   }
 );
+
 export const deleteEstateproperty = createAsyncThunk(
   "property/deleteEstateproperty",
   async (id, { rejectWithValue }) => {
@@ -74,6 +95,7 @@ export const deleteEstateproperty = createAsyncThunk(
     }
   }
 );
+
 const realestatePropertSlice = createSlice({
   name: "property",
   initialState: {
@@ -115,6 +137,21 @@ const realestatePropertSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      // user
+      .addCase(addUserEstateproperty.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(addUserEstateproperty.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload.data) {
+          state.data.push(action.payload.data);
+        }
+      })
+      .addCase(addUserEstateproperty.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
       .addCase(updateEstateproperty.fulfilled, (state, action) => {
         state.loading = false;
         if (action.payload.data) {

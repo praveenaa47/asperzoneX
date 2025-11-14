@@ -58,29 +58,9 @@ export default function BeachfrontHero() {
 
   return (
     <div className="w-full">
-      {/* Navigation Bar */}
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex space-x-8 font-semibold">
-              {["For Buyers", "For Tenants", "For Owners", "For Dealers/Builders"].map(
-                (item, idx) => (
-                  <a
-                    key={idx}
-                    href="#"
-                    className="text-blue-600 font-semibold hover:text-blue-700"
-                  >
-                    {item}
-                  </a>
-                )
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Hero Section */}
-      <div className="relative h-96 bg-cover bg-center transition-all duration-700 ease-in-out"
+      <div
+        className="relative h-96 bg-cover bg-center transition-all duration-700 ease-in-out"
         style={{
           backgroundImage: currentItem
             ? `url(${currentItem.image})`

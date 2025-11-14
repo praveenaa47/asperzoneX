@@ -1,8 +1,6 @@
 import { Hospital, School, Store, Train } from 'lucide-react';
 
 export default function NearBy({property}) {
-
-
   return (
     <div className="sm:p-6">
       <div className="w-full md:w-2/3 lg:w-2/3 p-6">
@@ -11,25 +9,21 @@ export default function NearBy({property}) {
             Nearby Amenities
           </h2>
 
-          {/* Changed from grid to vertical stack */}
           <div className="space-y-4">
             {property?.amenities?.length > 0 ? (
-              property?.amenities?.map((feature, index) => (
-            
+              property.amenities.map((amenity, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 p-4 rounded-lg  hover:bg-gray-100 transition"
+                  className="flex items-start gap-3 p-4 rounded-lg hover:bg-gray-100 transition"
                 >
-                                 <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
-
+                  <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
                   <span className="text-slate-700 font-medium text-base">
-                    {feature}
+                    {amenity}
                   </span>
                 </div>
               ))
             ):(
-                            <p className="text-gray-500 text-base">No features available.</p>
-
+              <p className="text-gray-500 text-base">No amenities available.</p>
             )}
           </div>
         </div>

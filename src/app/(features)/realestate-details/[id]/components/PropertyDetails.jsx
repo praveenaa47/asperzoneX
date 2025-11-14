@@ -1,6 +1,15 @@
 import { Home, Shield, Droplets, Sun, Warehouse, DoorOpen, Leaf, UtensilsCrossed } from 'lucide-react';
 
 export default function PropertyFeatures({property}) {
+  
+  // Since your API doesn't have a 'features' field, we'll use amenities or create default features
+  const features = property?.amenities || [
+    "Swimming Pool",
+    "Security",
+    "Playground",
+    "Parking",
+    "Garden"
+  ];
 
   return (
     <div className="sm:p-6 ">
@@ -11,16 +20,13 @@ export default function PropertyFeatures({property}) {
           </h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {property?.features?.length > 0 ? (
-              property.features.map((feature, index) => (
+            {features.length > 0 ? (
+              features.map((feature, index) => (
                 <div
                   key={index}
                   className="flex items-center gap-3 p-4 rounded-lg transition-colors duration-200 group"
                 >
-                  {/* Dot indicator */}
                   <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
-
-                  {/* Feature text */}
                   <span className="text-slate-700 font-medium text-sm sm:text-base capitalize">
                     {feature}
                   </span>

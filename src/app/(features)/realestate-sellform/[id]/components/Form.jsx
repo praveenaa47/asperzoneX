@@ -4,8 +4,8 @@ import { Upload } from "lucide-react";
 import { FaTag, FaWpforms } from "react-icons/fa6";
 import { useParams, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { addEstateproperty } from "@/redux/slices/realestateProprtySlice";
 import { useToast } from "@/components/UserToast";
+import { addUserEstateproperty } from "@/redux/slices/realestateProprtySlice";
 
 export default function PropertyListingForm() {
   const { id } = useParams();
@@ -16,7 +16,12 @@ export default function PropertyListingForm() {
 
   const [formData, setFormData] = useState({
     propertyName: "",
-    location: "",
+    location: {
+      country: "",
+      state: "",
+      district: "",
+      city: "",
+    },
     propertyType: "",
     bedType: "",
     bedrooms: "",
@@ -38,12 +43,28 @@ export default function PropertyListingForm() {
 
   // Handle text & select inputs
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const { name, value } = e.target;
+
+  // Handle nested fields like: location.country
+  if (name.includes(".")) {
+    const [parent, child] = name.split(".");
+
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [parent]: {
+        ...prev[parent],
+        [child]: value,
+      },
     }));
-  };
+  } else {
+    // Normal fields
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+};
+
 
   // Handle amenities as checkboxes
   const toggleAmenity = (amenity) => {
@@ -67,7 +88,11 @@ export default function PropertyListingForm() {
     // Build FormData for multipart/form-data
     const fd = new FormData();
     fd.append("propertyName", formData.propertyName);
-    fd.append("location", formData.location);
+    fd.append("location[country]", formData.location.country);
+    fd.append("location[state]", formData.location.state);
+    fd.append("location[district]", formData.location.district);
+    fd.append("location[city]", formData.location.city);
+
     fd.append("bedType", formData.bedType);
     fd.append("bedrooms", formData.bedrooms);
     fd.append("bathrooms", formData.bathrooms);
@@ -92,7 +117,7 @@ export default function PropertyListingForm() {
     images.forEach((file) => fd.append("images", file));
 
     try {
-      const result = await dispatch(addEstateproperty(fd)).unwrap();
+      const result = await dispatch(addUserEstateproperty(fd)).unwrap();
       addToast("success", "Property added successfully!");
       // router.push("/real-estate"); // redirect after success
     } catch (err) {
@@ -195,22 +220,52 @@ export default function PropertyListingForm() {
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                      Location
+                      Country
                     </label>
-                    <select
-                      name="location"
-                      value={formData.location}
+                    <input
+                      name="location.country"
+                      value={formData.location.country}
                       onChange={handleChange}
                       className="w-full px-3 py-2 text-black text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
-                    >
-                      <option value="">Select</option>
-                      <option value="new-york">New York</option>
-                      <option value="los-angeles">Los Angeles</option>
-                      <option value="chicago">Chicago</option>
-                    </select>
+                    />
                   </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                      State
+                    </label>
+                    <input
+                      name="location.state"
+                      value={formData.location.state}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 text-black text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                      District
+                    </label>
+                    <input
+                      name="location.district"
+                      value={formData.location.district}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 text-black text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                      City
+                    </label>
+                    <input
+                      name="location.city"
+                      value={formData.location.city}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 text-black text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1.5">
                       Property Type
@@ -223,9 +278,13 @@ export default function PropertyListingForm() {
                     >
                       <option value="">Select</option>
                       <option value="apartment">Apartment</option>
-                      <option value="house">House</option>
+                      <option value="townhouse">Town House</option>
+                      <option value="penthouse">Pent House</option>
+                      <option value="plot">Plot</option>
+                      <option value="commercial">Commercial</option>
+                      <option value="office">Office</option>
+                      <option value="shop">Shop</option>
                       <option value="villa">Villa</option>
-                      <option value="condo">Condo</option>
                     </select>
                   </div>
                 </div>
@@ -247,6 +306,20 @@ export default function PropertyListingForm() {
                     <option value="queen">Queen</option>
                     <option value="king">King</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    rows={4}
+                    className="w-full px-3 py-2 text-black text-sm border border-[#2563EB99] rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white resize-none"
+                    placeholder="Enter property description..."
+                  />
                 </div>
               </div>
             </div>
@@ -341,8 +414,8 @@ export default function PropertyListingForm() {
                     <input
                       type="radio"
                       name="furnished"
-                      value="unfurnished"
-                      checked={formData.furnished === "semifurnished"}
+                      value="semi-furnished"
+                      checked={formData.furnished === "semi-furnished"}
                       onChange={handleChange}
                       className="w-4 h-4 text-blue-600 border-[#2563EB99] focus:ring-blue-500"
                     />

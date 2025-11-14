@@ -1,11 +1,26 @@
 "use client";
-import { useState } from "react";
-import { Heart, Menu, SquareMenu, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Heart, Menu, SquareMenu, User, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [token, setToken] = useState(null);
   const router = useRouter();
+
+    useEffect(() => {
+    const storedToken = localStorage.getItem("authToken");
+    setToken(storedToken);
+  }, []);
+
+  // ✅ Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userData");
+    setToken(null);
+    router.push("/Login");
+  };
+
 
   return (
     <header className="bg-white shadow-sm py-3 relative">
@@ -68,13 +83,27 @@ export default function Header() {
               <Heart className="w-4 h-4 ml-2" />
             </button>
 
-            <button
-              onClick={() => router.push("/Login")}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
-            >
-              Log in
-            </button>
+          {token ? (
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => router.push("/userProfile")}
+                  className="flex items-center px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-gray-200 font-medium transition-colors"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Profile
+                </button>
+              
+              </div>
+            ) : (
+              <button
+                onClick={() => router.push("/Login")}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+              >
+                Log in
+              </button>
+            )}
           </div>
+          {/* </div> */}
 
           {/* Mobile Actions */}
           <div className="flex md:hidden items-center space-x-2">
@@ -155,6 +184,30 @@ export default function Header() {
                 <span>Favorites</span>
                 <Heart className="w-4 h-4" />
               </button>
+{token ? (
+                <>
+                  <button
+                    onClick={() => {
+                      router.push("/profile");
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-colors"
+                  >
+                    <span>Profile</span>
+                    <User className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg font-medium transition-colors"
+                  >
+                    <span>Logout</span>
+                  </button>
+                </>
+              ) : null}
+              
             </div>
           </nav>
         </div>

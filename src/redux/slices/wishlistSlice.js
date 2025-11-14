@@ -5,7 +5,7 @@ import { BASE_URL } from "../baseUrl";
 // 🔹 Helper: Get token
 const getAuthToken = () => {
   if (typeof window !== "undefined") {
-    return localStorage.getItem("Usertoken");
+    return localStorage.getItem("authToken");
   }
   return null;
 };
@@ -16,7 +16,7 @@ export const AddtoWishlist = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const token = getAuthToken();
-      const response = await axios.get(`${BASE_URL}/wishlist/add`, payload, {
+      const response = await axios.post(`${BASE_URL}/wishlist/add`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -34,7 +34,7 @@ export const getWishlist = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const token = getAuthToken();
-      const response = await axios.delete(`${BASE_URL}/wishlist/my`, {
+      const response = await axios.get(`${BASE_URL}/wishlist/my`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -52,7 +52,7 @@ export const removeWishlist = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const token = getAuthToken();
-      const response = await axios.get(`${BASE_URL}/wishlist/remove/${id}`, {
+      const response = await axios.delete(`${BASE_URL}/wishlist/remove/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

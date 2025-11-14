@@ -2,7 +2,7 @@ import React from 'react'
 
 function AboutUs({ property }) {
   return (
-    <div className="flex justify-start  px-4 md:px-6 lg:px-16">
+    <div className="flex justify-start px-4 md:px-6 lg:px-16">
       <div className="bg-white rounded-2xl shadow-sm w-230 p-8">
         <h2 className="text-2xl md:text-2xl font-bold text-gray-900 mb-4">
           About This Property

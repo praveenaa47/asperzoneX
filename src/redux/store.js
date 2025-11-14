@@ -12,6 +12,9 @@ import destinationReducer from "./slices/destinationSlice";
 import courseReducer from "./slices/courseSlice";
 import jobReducer from "./slices/jobSlice";
 import wishlistReducer from "./slices/wishlistSlice";
+import userAuthReducer from "./slices/UserAuthSlice";
+import userProfileReducer from "./slices/profileSlice";
+import adsReducer from "./slices/adsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -28,5 +31,8 @@ export const store = configureStore({
     courses: courseReducer,
     jobs: jobReducer,
     wishlist: wishlistReducer,
+    userAuth : userAuthReducer,
+    profile : userProfileReducer,
+    ads : adsReducer,
   },
 });

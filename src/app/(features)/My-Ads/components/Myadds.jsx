@@ -1,39 +1,28 @@
 "use client";
-import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Search } from "lucide-react";
+import { getAllads } from "@/redux/slices/adsSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function MyAds() {
-  const [activeTab, setActiveTab] = useState('All Ads');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState("All Ads");
+  const [searchQuery, setSearchQuery] = useState("");
+  const dispatch = useDispatch();
+  const { data: ads, loading, error } = useSelector((state) => state.ads);
 
-  const tabs = ['All Ads', 'Live', 'Draft', 'Rejected', 'Expired'];
+  useEffect(() => {
+    dispatch(getAllads());
+  }, [dispatch]);
 
-  const ads = [
-    {
-      id: 1,
-      image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=200&h=200&fit=crop',
-      title: '2018 Tata TIGOR XTA PETROL',
-      price: 'Rs 250000',
-      lastUpdated: 'Oct 23 2023',
-      expiresIn: '24 days',
-      featured: true
-    },
-    {
-      id: 2,
-      image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=200&h=200&fit=crop',
-      title: '2018 Tata TIGOR XTA PETROL',
-      price: 'Rs 250000',
-      lastUpdated: 'Oct 23 2023',
-      expiresIn: '24 days',
-      featured: false
-    }
-  ];
+  const tabs = ["All Ads", "Live", "Draft", "Rejected", "Expired"];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="px-4 py-6">
         {/* Header */}
-        <h1 className="text-2xl font-bold text-center  text-black mb-6">My Ads</h1>
+        <h1 className="text-2xl font-bold text-center  text-black mb-6">
+          My Ads
+        </h1>
 
         {/* Search and Tabs */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -57,8 +46,8 @@ export default function MyAds() {
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
                   activeTab === tab
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 }`}
               >
                 {tab}
@@ -67,49 +56,72 @@ export default function MyAds() {
           </div>
         </div>
 
+        {loading && <p className="text-center text-gray-600">Loading ads...</p>}
+        {error && (
+          <p className="text-center text-red-600">Failed to load ads.</p>
+        )}
+
         {/* Ads List */}
         <div className="space-y-4">
-          {ads.map((ad) => (
-            <div
-              key={ad.id}
-              className={`bg-white rounded-lg p-4 ${
-                ad.featured ? 'border border-blue-300' : 'border border-gray-200'
-              } hover:shadow-md transition-shadow`}
-            >
-              <div className="flex flex-col md:flex-row gap-4">
-                {/* Image */}
-                <div className="flex-shrink-0">
-                  <img
-                    src={ad.image}
-                    alt={ad.title}
-                    className="w-full md:w-24 h-24 object-cover rounded"
-                  />
-                </div>
+       {ads?.map((ad) => {
+  const adTitle = ad.title || ad.propertyName || "Untitled Ad";
 
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg mb-2 text-black">{ad.title}</h3>
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
-                    <span className="font-medium text-black">{ad.price}</span>
-                    <span>Last Updated on: {ad.lastUpdated}</span>
-                  </div>
-                  <p className="text-sm text-gray-700">
-                    Ad expire in <span className="font-semibold">{ad.expiresIn}</span>
-                  </p>
-                </div>
+  const adImage =
+    ad.media?.[0]?.url ||
+    ad.images?.[0] ||
+    ad.companyLogo ||
+    "/placeholder.png";
 
-                {/* Action Buttons */}
-                <div className="flex md:flex-col gap-2 mt-4 md:mt-0">
-                  <button className="flex-1 md:flex-none px-6 py-2 bg-white text-gray-700 border border-gray-300 rounded hover:bg-gray-50 transition-colors text-sm font-medium whitespace-nowrap">
-                    Edit Ad
-                  </button>
-                  <button className="flex-1 md:flex-none px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm font-medium whitespace-nowrap">
-                    Delete Ad
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+  const adPrice =
+    ad.price?.totalPrice ||
+    ad.price?.amount ||
+    ad.salary?.amount ||
+    null;
+
+  return (
+    <div
+      key={ad._id}
+      className={`bg-white rounded-lg p-4 ${
+        ad.isFeatured ? "border border-blue-300" : "border border-gray-200"
+      } hover:shadow-md transition-shadow`}
+    >
+      <div className="flex flex-col md:flex-row gap-4">
+        
+        {/* Image */}
+        <div className="flex-shrink-0">
+          <img
+            src={adImage}
+            alt={adTitle}
+            className="w-full md:w-24 h-24 object-cover rounded"
+          />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-lg mb-2 text-black">{adTitle}</h3>
+
+          <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-2">
+            <span className="font-medium text-black">
+              ₹{adPrice?.toLocaleString?.() || "N/A"}
+            </span>
+
+            <span>
+              Posted on: {new Date(ad.createdAt).toLocaleDateString("en-IN")}
+            </span>
+          </div>
+
+          {ad.expiresIn && (
+            <p className="text-sm text-gray-700">
+              Ad expires in <span className="font-semibold">{ad.expiresIn}</span>
+            </p>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+})}
+
         </div>
       </div>
     </div>
