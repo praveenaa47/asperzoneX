@@ -18,6 +18,7 @@ import adsReducer from "./slices/adsSlice";
 import enquiryReducer from "./slices/enquirySlice";
 import userSlice from "./slices/userSlice";
 import overviewReducer from "./slices/overviewSlice";
+import teamReducer from "./slices/TeamSlice";
 
 export const store = configureStore({
   reducer: {
@@ -40,5 +41,6 @@ export const store = configureStore({
     enquiries: enquiryReducer,
     users : userSlice,
     overview : overviewReducer,
+    teams : teamReducer
   },
 });

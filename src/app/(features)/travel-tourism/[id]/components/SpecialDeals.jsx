@@ -45,7 +45,7 @@ useEffect(()=>{
           {tourPackageList.map((pkg) => (
             <div
               key={pkg._id}
-              onClick={()=>router.push(`/special-deals/${pkg._id}`)}
+              onClick={()=>router.push(`/special-deals/${pkg._id}`)}  
               className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col h-full min-w-[260px] sm:min-w-0"
             >
               {}
@@ -72,7 +72,10 @@ useEffect(()=>{
                 {}
                 <div className="flex flex-col sm:flex-row gap-2 mt-4">
                   <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+  setIsModalOpen(true);
+}}
                     className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold py-2 rounded-lg transition-all duration-300 hover:bg-blue-700 text-sm"
                   >
                     <ArrowRight className="w-4 h-4" />

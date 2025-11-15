@@ -1,32 +1,19 @@
 
 "use client"
+
+import { getTeamMembers } from "@/redux/slices/TeamSlice";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 export default function MeetOurTeam() {
-  const teamMembers = [
-    {
-      id: 1,
-      name: "John Abraham",
-      role: "Senior Financial Advisor",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop"
-    },
-    {
-      id: 2,
-      name: "Sarah Ahmed",
-      role: "Data Strategy Lead",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop"
-    },
-    {
-      id: 3,
-      name: "Michael Abraham",
-      role: "Retirement Planning Expert",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop"
-    },
-    {
-      id: 4,
-      name: "Thaha Saifu",
-      role: "Tax Optimizer",
-      image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop"
-    }
-  ];
+  
+const dispatch = useDispatch();
+const{data, loading, error}=useSelector((state)=>state.teams)
+
+
+useEffect(()=>{
+  dispatch(getTeamMembers())
+},[dispatch])
 
   return (
     <div className="py-12 md:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-white">
@@ -39,15 +26,15 @@ export default function MeetOurTeam() {
         {/* Mobile Scrollable Container */}
         <div className="lg:hidden overflow-x-auto scrollbar-hide -mx-4 px-4">
           <div className="flex gap-4 pb-4">
-            {teamMembers.map((member) => (
+            {data.map((member) => (
               <div
-                key={member.id}
+                key={member._id}
                 className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 flex-shrink-0 w-64"
               >
                 {/* Image Container */}
                 <div className="relative h-80 overflow-hidden">
                   <img
-                    src={member.image}
+                    src={member.img}
                     alt={member.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
@@ -62,7 +49,7 @@ export default function MeetOurTeam() {
                     {member.name}
                   </h3>
                   <p className="text-sm text-blue-100">
-                    {member.role}
+                    {member.designation}
                   </p>
                 </div>
               </div>
@@ -72,15 +59,15 @@ export default function MeetOurTeam() {
 
         {/* Desktop Grid */}
         <div className="hidden lg:grid lg:grid-cols-4 gap-6 md:gap-8">
-          {teamMembers.map((member) => (
+          {data.map((member) => (
             <div
-              key={member.id}
+              key={member._id}
               className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300"
             >
               {/* Image Container */}
               <div className="relative h-80 overflow-hidden">
                 <img
-                  src={member.image}
+                  src={member.img}
                   alt={member.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
@@ -95,7 +82,7 @@ export default function MeetOurTeam() {
                   {member.name}
                 </h3>
                 <p className="text-sm text-blue-100">
-                  {member.role}
+                  {member.designation}
                 </p>
               </div>
             </div>
