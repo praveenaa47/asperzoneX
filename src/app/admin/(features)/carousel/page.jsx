@@ -14,7 +14,6 @@ const CarouselManagement = () => {
   const { data: categories } = useSelector((state) => state.category);
   const { addToast } = useToast();
 
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCarousel, setEditingCarousel] = useState(null);
   const [filters, setFilters] = useState({
@@ -25,7 +24,6 @@ const CarouselManagement = () => {
   const [deleteId, setDeleteId] = useState(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-
 
   useEffect(() => {
     dispatch(getAllCarousels());

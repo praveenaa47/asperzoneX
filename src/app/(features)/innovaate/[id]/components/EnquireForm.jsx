@@ -1,20 +1,39 @@
-"use client"
-import { useState } from 'react';
-import { User, Phone, Mail, MapPin, Upload, Lightbulb, ChevronDown } from 'lucide-react';
+"use client";
+import { useState } from "react";
+import {
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  Upload,
+  Lightbulb,
+  ChevronDown,
+} from "lucide-react";
+import { useDispatch } from "react-redux";
+import { useToast } from "@/components/UserToast";
+import { useParams } from "next/navigation";
+import { addEnquiry } from "@/redux/slices/enquirySlice";
 
 export default function UnleashIdeasForm() {
+  const dispatch = useDispatch();
+  const[loading, setLoading]=useState(false)
+  // const {id} = useParams();
+  const { addToast } = useToast();
+  const params = useParams();
+   const categoryId = params?.id; 
+
   const [formData, setFormData] = useState({
     image: null,
-    ideaTitle: '',
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    currentStatus: '',
-    location: '',
-    ideaDescription: '',
-    videoLink: '',
-    referenceLink: ''
+    ideaTitle: "",
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    currentStatus: "",
+    location: "",
+    ideaDescription: "",
+    videoLink: "",
+    referenceLink: "",
   });
 
   const [imagePreview, setImagePreview] = useState(null);
@@ -23,7 +42,7 @@ export default function UnleashIdeasForm() {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
 
@@ -39,9 +58,42 @@ export default function UnleashIdeasForm() {
     }
   };
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
-    alert('Thank you for sharing your innovative idea!');
+  const handleSubmit = async () => {
+    if (!categoryId) {
+      addToast("Category ID missing!");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const submitData = new FormData();
+
+      submitData.append("category", categoryId);
+      submitData.append("ideaTitle", formData.ideaTitle);
+      submitData.append("name", `${formData.firstName} ${formData.lastName}`);
+      submitData.append("phone", formData.phone);
+      submitData.append("email", formData.email);
+      submitData.append("currentStatus", formData.currentStatus);
+      submitData.append("innovate_location", formData.location);
+      submitData.append("ideaDescription", formData.ideaDescription);
+      submitData.append("videoLink", formData.videoLink);
+      submitData.append("referenceLink", formData.referenceLink);
+
+      if (formData.image) {
+        submitData.append("image", formData.image);
+      }
+
+      const result = await dispatch(addEnquiry(submitData)).unwrap();
+
+      if (result?.success) {
+        addToast("success","Thank you for your enquiry! We will get back to you shortly.");
+      }
+    } catch (error) {
+      addToast(error || "Submission failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,7 +110,8 @@ export default function UnleashIdeasForm() {
             Unleash Your Ideas. Inspire The Future
           </h1>
           <p className="text-gray-600 text-sm md:text-base">
-            Share Your Innovative Idea With The Innovatex Community And Inspire Others.
+            Share Your Innovative Idea With The Innovatex Community And Inspire
+            Others.
           </p>
         </div>
 
@@ -80,15 +133,23 @@ export default function UnleashIdeasForm() {
               <label htmlFor="imageUpload" className="cursor-pointer">
                 {imagePreview ? (
                   <div className="space-y-3">
-                    <img src={imagePreview} alt="Preview" className="mx-auto max-h-48 rounded-lg" />
-                    <p className="text-sm text-blue-600">Click to change image</p>
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="mx-auto max-h-48 rounded-lg"
+                    />
+                    <p className="text-sm text-blue-600">
+                      Click to change image
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <Upload className="mx-auto h-12 w-12 text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-600">Drag & Drop here</p>
-                      <p className="text-xs text-gray-500">or click to upload</p>
+                      <p className="text-xs text-gray-500">
+                        or click to upload
+                      </p>
                     </div>
                   </div>
                 )}
@@ -98,7 +159,10 @@ export default function UnleashIdeasForm() {
 
           {/* Idea Title */}
           <div>
-            <label htmlFor="ideaTitle" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="ideaTitle"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Idea title
             </label>
             <input
@@ -108,7 +172,7 @@ export default function UnleashIdeasForm() {
               value={formData.ideaTitle}
               onChange={handleChange}
               placeholder="type here"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+              className="w-full px-4 py-2.5 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
             />
           </div>
 
@@ -116,7 +180,10 @@ export default function UnleashIdeasForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* First Name */}
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 First Name
               </label>
               <div className="relative border border-blue-300 rounded-lg">
@@ -130,14 +197,17 @@ export default function UnleashIdeasForm() {
                   value={formData.firstName}
                   onChange={handleChange}
                   placeholder="john"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full pl-10 text-black pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 />
               </div>
             </div>
 
             {/* Last Name */}
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Last Name
               </label>
               <div className="relative border border-blue-300 rounded-lg">
@@ -151,7 +221,7 @@ export default function UnleashIdeasForm() {
                   value={formData.lastName}
                   onChange={handleChange}
                   placeholder="Doe"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full pl-10 text-black pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 />
               </div>
             </div>
@@ -161,7 +231,10 @@ export default function UnleashIdeasForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Phone Number */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Phone Number
               </label>
               <div className="relative border border-blue-300 rounded-lg">
@@ -175,14 +248,17 @@ export default function UnleashIdeasForm() {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="126555"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full pl-10 pr-4 text-black py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Email
               </label>
               <div className="relative border border-blue-300 rounded-lg">
@@ -196,7 +272,7 @@ export default function UnleashIdeasForm() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="john@mail.com"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full pl-10 pr-4 text-black py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 />
               </div>
             </div>
@@ -206,7 +282,10 @@ export default function UnleashIdeasForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Current Status */}
             <div>
-              <label htmlFor="currentStatus" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="currentStatus"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Current status
               </label>
               <div className="relative border border-blue-300 rounded-lg">
@@ -215,7 +294,7 @@ export default function UnleashIdeasForm() {
                   name="currentStatus"
                   value={formData.currentStatus}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
+                  className="w-full px-4 text-black py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
                 >
                   <option value="">Student</option>
                   <option value="Student">Student</option>
@@ -230,7 +309,10 @@ export default function UnleashIdeasForm() {
 
             {/* Location */}
             <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="location"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Location
               </label>
               <div className="relative border border-blue-300 rounded-lg">
@@ -244,7 +326,7 @@ export default function UnleashIdeasForm() {
                   value={formData.location}
                   onChange={handleChange}
                   placeholder="Enter your location"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full pl-10 pr-4 text-black py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 />
               </div>
             </div>
@@ -252,7 +334,10 @@ export default function UnleashIdeasForm() {
 
           {/* Idea Description */}
           <div>
-            <label htmlFor="ideaDescription" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="ideaDescription"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Idea Description
             </label>
             <textarea
@@ -262,7 +347,7 @@ export default function UnleashIdeasForm() {
               onChange={handleChange}
               placeholder="describe your ideas in detail..."
               rows="6"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
+              className="w-full px-4 py-3 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
             ></textarea>
           </div>
 
@@ -270,7 +355,10 @@ export default function UnleashIdeasForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Video Link */}
             <div>
-              <label htmlFor="videoLink" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="videoLink"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Video link (optional)
               </label>
               <input
@@ -280,13 +368,16 @@ export default function UnleashIdeasForm() {
                 value={formData.videoLink}
                 onChange={handleChange}
                 placeholder="add here"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                className="w-full px-4 text-black py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               />
             </div>
 
             {/* Reference Link */}
             <div>
-              <label htmlFor="referenceLink" className="block text-sm font-medium text-gray-700 mb-2 ">
+              <label
+                htmlFor="referenceLink"
+                className="block text-sm font-medium text-gray-700 mb-2 "
+              >
                 Reference link (optional)
               </label>
               <input
@@ -296,7 +387,7 @@ export default function UnleashIdeasForm() {
                 value={formData.referenceLink}
                 onChange={handleChange}
                 placeholder="add here"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                className="w-full px-4 py-2.5 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               />
             </div>
           </div>

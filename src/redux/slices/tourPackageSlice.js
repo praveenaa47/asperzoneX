@@ -54,7 +54,7 @@ export const updateTourPackage = createAsyncThunk(
   async ({ id, formData }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("adminToken");
-      const response = await axios.put(`${BASE_URL}/tour-packages/${id}`, formData, {
+      const response = await axios.patch(`${BASE_URL}/tour-packages/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,

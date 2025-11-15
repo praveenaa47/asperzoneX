@@ -3,13 +3,16 @@
 import React, { useState } from "react";
 import { Heart, MapPin, Phone, ChevronRight } from "lucide-react";
 import PriceSummary from "../carModals/PriceBreakModal";
+import SupportForm from "../carModals/EnquiryModal";
 
 export default function CarDetailPage({ car }) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
 
-  const images = car.images?.length ? car.images : ["/default-car.jpg"];
+
+const images = car.media?.map(m => m.url) || ["/default-car.jpg"];
 
   // Create specifications array from car data
   const specifications = [
@@ -30,7 +33,7 @@ export default function CarDetailPage({ car }) {
       name: `Color: ${car.color}` 
     },
     { 
-      name: `Seats: ${car.seatingCapacity}` 
+      name: `Seats: ${car.passengerCapacity}` 
     },
     { 
       name: `KMs Driven: ${car.kmsDriven?.toLocaleString() || 'N/A'}` 
@@ -65,7 +68,7 @@ export default function CarDetailPage({ car }) {
                 alt={car.title}
                 className="w-full h-96 object-cover"
               />
-              <button
+              {/* <button
                 onClick={() => setIsFavorite(!isFavorite)}
                 className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform"
               >
@@ -74,7 +77,7 @@ export default function CarDetailPage({ car }) {
                     isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
                   }`}
                 />
-              </button>
+              </button> */}
             </div>
 
             {/* Thumbnail Gallery */}
@@ -137,10 +140,10 @@ export default function CarDetailPage({ car }) {
                     {car.location?.city}, {car.location?.country}
                   </span>
                 </div>
-                <button className="flex items-center gap-2 text-blue-600 hover:text-blue-700 ml-auto">
+                {/* <button className="flex items-center gap-2 text-blue-600 hover:text-blue-700 ml-auto">
                   <Phone className="w-5 h-5" />
                   <span className="text-sm font-semibold">Call for us</span>
-                </button>
+                </button> */}
               </div>
 
               {/* Description */}
@@ -175,7 +178,7 @@ export default function CarDetailPage({ car }) {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <span className="text-3xl font-bold text-gray-900">
-                      {formatPrice(car.price)}
+                      {formatPrice(car.price?.totalPrice)}
                     </span>
                     {car.price?.isNegotiable && (
                       <span className="text-green-600 text-sm ml-2">(Negotiable)</span>
@@ -190,12 +193,12 @@ export default function CarDetailPage({ car }) {
                   </button>
                 </div>
 
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold text-lg transition-colors shadow-md hover:shadow-lg"
-                >
-                  Enquiry now
-                </button>
+               <button
+  onClick={() => setIsEnquiryModalOpen(true)}
+  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold text-lg transition-colors shadow-md hover:shadow-lg"
+>
+  Enquiry now
+</button>
               </div>
             </div>
           </div>
@@ -207,6 +210,11 @@ export default function CarDetailPage({ car }) {
         onClose={() => setIsModalOpen(false)}
         car={car}
       />
+    <SupportForm
+  isOpen={isEnquiryModalOpen}
+  onClose={() => setIsEnquiryModalOpen(false)}
+  car={car}
+/>
     </div>
   );
 }

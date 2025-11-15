@@ -1,13 +1,22 @@
 import React, { useState } from "react";
-import { Mail, Phone, Calendar, MapPin } from "lucide-react";
+import { Mail, Phone, Calendar, MapPin, X } from "lucide-react";
+import { addEnquiry } from "@/redux/slices/enquirySlice";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "next/navigation";
+import { useToast } from "@/components/UserToast";
+
 
 export default function SupportForm({ isOpen, onClose }) {
+   const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.enquiries);
+  const {addToast} = useToast()
   const [formData, setFormData] = useState({
     firstName: "",
     email: "",
     phone: "",
     location: "",
   });
+  const { categoryId } = useParams();
 
   const handleChange = (e) => {
     setFormData({
@@ -16,11 +25,37 @@ export default function SupportForm({ isOpen, onClose }) {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    alert("Form submitted successfully!");
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const payload = {
+    category: categoryId,
+    name: formData.firstName,
+    email: formData.email,
+    phone: formData.phone,
+    location: formData.location,
   };
+
+  try {
+    const result = await dispatch(addEnquiry(payload)).unwrap();
+
+    addToast('success','Car enquiry successfully added')
+    onClose();
+
+    // Reset form
+    setFormData({
+      firstName: "",
+      email: "",
+      phone: "",
+      location: "",
+    });
+
+  } catch (err) {
+    console.error("Enquiry failed:", err);
+    addToast('error','Failed to add enquiry')
+  }
+};
+
 
     if (!isOpen) return null;
 
@@ -50,8 +85,11 @@ export default function SupportForm({ isOpen, onClose }) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name Fields */}
+          
+
+          {/* Email and Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
+              <div>
               <label className="block text-xs font-medium text-gray-700 mb-2">
                 First Name
               </label>
@@ -61,13 +99,9 @@ export default function SupportForm({ isOpen, onClose }) {
                 value={formData.firstName}
                 onChange={handleChange}
                 placeholder="John"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                className="w-full px-4 py-2 text-black border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               />
             </div>
-          </div>
-
-          {/* Email and Phone */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-2">
                 <Mail className="inline w-4 h-4 mr-1" />
@@ -79,7 +113,21 @@ export default function SupportForm({ isOpen, onClose }) {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="john@example.com"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                className="w-full px-4 py-2 text-black border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-2">
+                <Mail className="inline w-4 h-4 mr-1" />
+                Location
+              </label>
+              <input
+                type="location"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="john@example.com"
+                className="w-full px-4 py-2 border text-black border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               />
             </div>
             <div>
@@ -93,7 +141,7 @@ export default function SupportForm({ isOpen, onClose }) {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="+1 234 567 890"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                className="w-full px-4 py-2 text-black border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               />
             </div>
           </div>

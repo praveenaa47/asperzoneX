@@ -12,12 +12,12 @@ import { useParams } from "next/navigation";
 
 function Page() {
   const dispatch = useDispatch();
-  const { id } = useParams();
+  const {carId } = useParams();
   const { selectedCar, loading, error } = useSelector((state) => state.cars);
 
   useEffect(() => {
-    if (id) dispatch(getCarById(id));
-  }, [dispatch, id]);
+    if (carId) dispatch(getCarById(carId));
+  }, [dispatch, carId]);
 
   if (loading) return <p className="text-center py-10">Loading car details...</p>;
   if (error) return <p className="text-center text-red-500 py-10">{error}</p>;

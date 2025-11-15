@@ -80,8 +80,8 @@ export default function CarListing() {
         <div className="md:hidden overflow-x-auto scrollbar-hide -mx-4 px-4">
           <div className="flex gap-4 pb-4">
             {destinations.map((dest) => (
-              <div
-                key={dest.id}
+              <div  
+                key={dest._id}
                 className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between flex-shrink-0 w-[280px] sm:w-[320px]"
               >
                 <div className="relative w-full h-40 sm:h-48 overflow-hidden">

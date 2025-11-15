@@ -15,6 +15,7 @@ import wishlistReducer from "./slices/wishlistSlice";
 import userAuthReducer from "./slices/UserAuthSlice";
 import userProfileReducer from "./slices/profileSlice";
 import adsReducer from "./slices/adsSlice";
+import enquiryReducer from "./slices/enquirySlice";
 
 export const store = configureStore({
   reducer: {
@@ -34,5 +35,6 @@ export const store = configureStore({
     userAuth : userAuthReducer,
     profile : userProfileReducer,
     ads : adsReducer,
+    enquiries : enquiryReducer,
   },
 });

@@ -16,15 +16,15 @@ import { getEstatepropertyById } from "@/redux/slices/realestateProprtySlice";
 
 function page() {
   const dispatch = useDispatch();
-   const { id } = useParams(); 
+   const { propertyId } = useParams(); 
 const { selectedProperty: property, loading, error } = useSelector((state) => state.property);
 
   useEffect(() => {
-    console.log("Fetching property id:", id);
-    if (id) {
-      dispatch(getEstatepropertyById(id));
+    console.log("Fetching property id:", propertyId);
+    if (propertyId) {
+      dispatch(getEstatepropertyById(propertyId));
     }
-  }, [dispatch, id]);
+  }, [dispatch, propertyId]);
 
   if (loading) {
     return (

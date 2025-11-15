@@ -1,8 +1,19 @@
 "use client";
 import { useState } from 'react';
 import { User, Mail, Phone, ChevronDown, Calendar } from 'lucide-react';
+import { addEnquiry } from '@/redux/slices/enquirySlice';
+import { useDispatch } from 'react-redux';
+import { useParams } from 'next/navigation';
+import { useToast } from '@/components/UserToast';
+
 
 export default function FillForm() {
+  const dispatch = useDispatch()
+  // const {id} = useParams();
+     const { addToast } = useToast();
+     const params = useParams();
+  
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -25,14 +36,38 @@ export default function FillForm() {
     });
   };
 
-  const handleSubmit = () => {
-    if (!formData.termsAccepted) {
-      alert('Please accept the Terms & Condition to proceed.');
-      return;
-    }
-    console.log('Form submitted:', formData);
-    alert('Thank you for your enquiry! We will get back to you shortly.');
+const handleSubmit = async () => {
+  if (!formData.termsAccepted) {
+      addToast("error", "Please accept the condition");
+    return;
+  }
+
+  const enquiryPayload = {
+category: params?.id,
+    name: `${formData.firstName} ${formData.lastName}`,
+    email: formData.email,
+    phone: formData.phone,
+    student_location: formData.studentsLocation,
+    course_interested: formData.courseInterested,
+    nationality: formData.nationality,
+    qualification: formData.higherQualification,
+    starting: formData.startDate,
+    heard_from: formData.hearAbout
   };
+
+  try {
+    const result = await dispatch(addEnquiry(enquiryPayload)).unwrap();
+
+    if (result.success) {
+      addToast("success","Thank you for your enquiry! We will get back to you shortly.");
+    } else {
+      addToast(result.message || "Something went wrong");
+    }
+  } catch (error) {
+    addToast(error || "Failed to submit enquiry");
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
@@ -67,7 +102,7 @@ export default function FillForm() {
                   value={formData.firstName}
                   onChange={handleChange}
                   placeholder="John"
-                  className="w-full text-gray-500 pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full text-black pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 />
               </div>
             </div>
@@ -88,7 +123,7 @@ export default function FillForm() {
                   value={formData.lastName}
                   onChange={handleChange}
                   placeholder="Doe"
-                  className="w-full text-gray-500 pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full text-black pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 />
               </div>
             </div>
@@ -112,7 +147,7 @@ export default function FillForm() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="john@mail.com"
-                  className="w-full text-gray-500 pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full text-black pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 />
               </div>
             </div>
@@ -133,7 +168,7 @@ export default function FillForm() {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="126555"
-                  className="w-full text-gray-500 pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full text-black pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 />
               </div>
             </div>
@@ -152,7 +187,7 @@ export default function FillForm() {
                   name="studentsLocation"
                   value={formData.studentsLocation}
                   onChange={handleChange}
-                  className="w-full text-gray-500 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
+                  className="w-full text-black px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
                 >
                   <option value="">Select a country</option>
                   <option value="USA">United States</option>
@@ -177,7 +212,7 @@ export default function FillForm() {
                   name="nationality"
                   value={formData.nationality}
                   onChange={handleChange}
-                  className="w-full text-gray-500 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
+                  className="w-full text-black px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
                 >
                   <option value="">Select a country</option>
                   <option value="USA">United States</option>
@@ -203,7 +238,7 @@ export default function FillForm() {
                 name="higherQualification"
                 value={formData.higherQualification}
                 onChange={handleChange}
-                className="w-full text-gray-500 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
+                className="w-full text-black px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
               >
                 <option value="">Select your highest qualification</option>
                 <option value="Plus Two (+2)">Plus Two (+2)</option>
@@ -213,7 +248,7 @@ export default function FillForm() {
               </select>
               <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
             </div>
-            <p className="text-xs text-gray-500 mt-1">E.g., Plus Two (+2), Bachelor's, Master's, etc.</p>
+            <p className="text-xs text-black mt-1">E.g., Plus Two (+2), Bachelor's, Master's, etc.</p>
           </div>
 
           {/* Course Interested and Start Date Row */}
@@ -229,7 +264,7 @@ export default function FillForm() {
                   name="courseInterested"
                   value={formData.courseInterested}
                   onChange={handleChange}
-                  className="w-full text-gray-500 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
+                  className="w-full text-black px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
                 >
                   <option value="">Select interested course</option>
                   <option value="Business">Business Management</option>
@@ -255,7 +290,7 @@ export default function FillForm() {
                   value={formData.startDate}
                   onChange={handleChange}
                   placeholder="mm/dd/yyyy"
-                  className="w-full text-gray-500 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full text-black px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 />
                 <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
               </div>
@@ -273,7 +308,7 @@ export default function FillForm() {
                 name="hearAbout"
                 value={formData.hearAbout}
                 onChange={handleChange}
-                className="w-full text-gray-500 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
+                className="w-full text-black px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
               >
                 <option value="">Select here</option>
                 <option value="Social Media">Social Media</option>
@@ -282,7 +317,7 @@ export default function FillForm() {
                 <option value="Advertisement">Advertisement</option>
                 <option value="Other">Other</option>
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-black pointer-events-none" />
             </div>
           </div>
 
@@ -296,7 +331,7 @@ export default function FillForm() {
               onChange={handleChange}
               className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
             />
-            <label htmlFor="termsAccepted" className="text-xs sm:text-sm text-gray-700 leading-relaxed">
+            <label htmlFor="termsAccepted" className="text-xs sm:text-sm text-black leading-relaxed">
               I accept the <a href="#" className="text-blue-600 hover:underline">Terms & Condition</a>. By submitting this form, I consent to receive relevant communications via email, phone, or text from Aspire Zones X and its partners. I understand that my information will not be shared across Aspire Zones X Group and that I can opt out at any time by using the unsubscribe link provided in all communications.
               <br />
               <span className="block mt-1">

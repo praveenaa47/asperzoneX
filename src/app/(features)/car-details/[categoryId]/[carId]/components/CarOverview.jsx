@@ -27,7 +27,7 @@ export default function CarOverview({ car }) {
     { 
       icon: Gauge, 
       label: 'Seating Capacity', 
-      value: car.seatingCapacity ? `${car.seatingCapacity} seats` : 'N/A' 
+value: car.passengerCapacity ? `${car.passengerCapacity} seats` : 'N/A'
     },
     { 
       icon: User, 

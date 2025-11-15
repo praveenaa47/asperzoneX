@@ -106,11 +106,11 @@ export default function BlogPostSection() {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              <Categories
+              {/* <Categories
                 categories={categories}
                 onShowMore={handleShowMoreCategories}
-              />
-              <RecentPosts posts={recentPosts} />
+              /> */}
+              {/* <RecentPosts posts={recentPosts} /> */}
               <ConversationAndCV
                 formData={formData}
                 onInputChange={handleInputChange}

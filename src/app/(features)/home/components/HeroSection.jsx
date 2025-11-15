@@ -66,8 +66,9 @@ const HeroSection = () => {
 
   return (
     <>
-      <div className="border-t border-gray-200">
-        <div className="px-4 sm:px-6 lg:px-4 overflow-x-auto">
+      <div className="border-t border-gray-200 ">
+       <div className="px-4 sm:px-6 lg:px-4 overflow-x-auto md:overflow-visible relative">
+
           <div className="flex items-center justify-between py-1 min-w-max sm:min-w-0">
             {menuItems.map((item, index) => {
               const Icon = item.icon;

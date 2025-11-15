@@ -13,7 +13,7 @@ const CategoryModal = ({ category, onSave, onClose, loading = false }) => {
   const [errors, setErrors] = useState({});
 
   const linkOptions = [
-    { value: '/car', label: 'Car' },
+    { value: '/cars', label: 'Car' },
     { value: '/real-estate', label: 'Property' },
     { value: '/travel-tourism', label: 'Tour Package' },
     { value: '/innovaate', label: 'Innovate' },
@@ -53,8 +53,6 @@ const CategoryModal = ({ category, onSave, onClose, loading = false }) => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -66,7 +64,6 @@ const CategoryModal = ({ category, onSave, onClose, loading = false }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!validTypes.includes(file.type)) {
         setErrors(prev => ({
@@ -75,8 +72,6 @@ const CategoryModal = ({ category, onSave, onClose, loading = false }) => {
         }));
         return;
       }
-
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setErrors(prev => ({
           ...prev,
@@ -113,24 +108,18 @@ const CategoryModal = ({ category, onSave, onClose, loading = false }) => {
     if (!formData.name.trim()) {
       newErrors.name = 'Category name is required';
     }
-
     if (!formData.description.trim()) {
       newErrors.description = 'Description is required';
     }
-
     if (!formData.link) {
       newErrors.link = 'Please select a category type';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (validateForm()) {
-      // Create FormData for file upload
       const submitData = new FormData();
       submitData.append('name', formData.name);
       submitData.append('description', formData.description);
@@ -140,7 +129,6 @@ const CategoryModal = ({ category, onSave, onClose, loading = false }) => {
       if (imageFile) {
         submitData.append('image', imageFile);
       } else if (formData.image) {
-        // If editing and image hasn't changed, send the existing image URL
         submitData.append('image', formData.image);
       }
 

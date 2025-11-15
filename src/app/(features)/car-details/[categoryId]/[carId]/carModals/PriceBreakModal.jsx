@@ -1,13 +1,10 @@
-import React from 'react';
-import { Info, X } from 'lucide-react';
+import React from "react";
+import { Info, X } from "lucide-react";
 
-export default function PriceSummary({ isOpen, onClose }) {
-  const priceData = {
-    basePrice: 417911,
-    rcTransferPrice: 6000,
-    carServicingCharges: 4000,
-    totalPrice: 987654,
-  };
+export default function PriceSummary({ isOpen, onClose, car }) {
+  if (!isOpen || !car?.price) return null;
+
+  const priceData = car.price;
 
   if (!isOpen) return null;
 
@@ -41,7 +38,7 @@ export default function PriceSummary({ isOpen, onClose }) {
               </h3>
             </div>
             <p className="text-lg font-bold text-gray-900">
-              ₹{priceData.basePrice.toLocaleString('en-IN')}
+              ₹{priceData.basePrice?.toLocaleString("en-IN")}{" "}
             </p>
           </div>
 
@@ -52,13 +49,13 @@ export default function PriceSummary({ isOpen, onClose }) {
                 RC transfer price
               </h3>
               <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                Sunnies RC transfer service comes with RTO assistance. Charges include
-                Regional Transport Office (RTO) fees, specific to car and transfer
-                location.
+                Sunnies RC transfer service comes with RTO assistance. Charges
+                include Regional Transport Office (RTO) fees, specific to car
+                and transfer location.
               </p>
             </div>
             <p className="text-lg font-bold text-gray-900">
-              ₹{priceData.rcTransferPrice.toLocaleString('en-IN')}
+              ₹{priceData.rcTransferPrice?.toLocaleString("en-IN")}{" "}
             </p>
           </div>
 
@@ -69,12 +66,12 @@ export default function PriceSummary({ isOpen, onClose }) {
                 Car servicing charges
               </h3>
               <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                One-time fee for pre-sale car maintenance, including oil change, filter
-                replacement, brake check, and wheel alignment.
+                One-time fee for pre-sale car maintenance, including oil change,
+                filter replacement, brake check, and wheel alignment.
               </p>
             </div>
             <p className="text-lg font-bold text-gray-900">
-              ₹{priceData.carServicingCharges.toLocaleString('en-IN')}
+              ₹{priceData.carServicingCharges?.toLocaleString("en-IN")}{" "}
             </p>
           </div>
 
@@ -85,7 +82,7 @@ export default function PriceSummary({ isOpen, onClose }) {
                 Total car price
               </h3>
               <p className="text-2xl font-bold text-gray-900">
-                ₹{priceData.totalPrice.toLocaleString('en-IN')}
+                ₹{priceData.totalPrice?.toLocaleString("en-IN")}{" "}
               </p>
             </div>
           </div>

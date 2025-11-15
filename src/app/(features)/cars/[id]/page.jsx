@@ -12,6 +12,7 @@ import { getAllCars } from "@/redux/slices/carSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { AddtoWishlist, getWishlist, removeWishlist } from "@/redux/slices/wishlistSlice";
 import { useToast } from "@/components/UserToast";
+import { useParams } from "next/navigation";
 
 
 function page() {
@@ -19,6 +20,7 @@ function page() {
   const { carList, loading, error } = useSelector((state) => state.cars);
    const { items: wishlistItems } = useSelector((state) => state.wishlist);
    const { addToast } = useToast();
+    const { id } = useParams();
 
   useEffect(() => {
     dispatch(getAllCars());
@@ -140,6 +142,7 @@ function page() {
               toggleFavorite={toggleFavorite}
               sortOption={sortOption}
               onSortChange={handleSortChange}
+              categoryId={id}
             />
           </div>
         </div>

@@ -1,8 +1,16 @@
 "use client"
 import { useState } from 'react';
 import { User, Mail, Phone } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { useToast } from '@/components/UserToast';
+import { useParams } from 'next/navigation';
+import { addEnquiry } from '@/redux/slices/enquirySlice';
 
 export default function SupportForm() {
+    const dispatch = useDispatch()
+       const { addToast } = useToast();
+       const params = useParams();
+  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -18,10 +26,29 @@ export default function SupportForm() {
     });
   };
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
-    alert('Thank you for your enquiry! We will get back to you shortly.');
+const handleSubmit = async () => {
+
+
+  const enquiryPayload = {
+category: params?.id,
+    name: `${formData.firstName} ${formData.lastName}`,
+    email: formData.email,
+    phone: formData.phone,
+    message: formData.message,
   };
+
+  try {
+    const result = await dispatch(addEnquiry(enquiryPayload)).unwrap();
+
+    if (result.success) {
+      addToast("success","Thank you for your enquiry! We will get back to you shortly.");
+    } else {
+      addToast(result.message || "Something went wrong");
+    }
+  } catch (error) {
+    addToast(error || "Failed to submit enquiry");
+  }
+};
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4 ">
@@ -56,7 +83,7 @@ export default function SupportForm() {
                   value={formData.firstName}
                   onChange={handleChange}
                   placeholder="John"
-                  className="w-full pl-10 text-gray-600 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full pl-10 text-black pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 />
               </div>
             </div>
@@ -77,7 +104,7 @@ export default function SupportForm() {
                   value={formData.lastName}
                   onChange={handleChange}
                   placeholder="Doe"
-                  className="w-full text-gray-700 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  className="w-full text-black pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 />
               </div>
             </div>
@@ -99,7 +126,7 @@ export default function SupportForm() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="john@mail.com"
-                className="w-full text-gray-700 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                className="w-full text-black pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               />
             </div>
           </div>
@@ -120,7 +147,7 @@ export default function SupportForm() {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="126555"
-                className="w-full text-gray-700 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                className="w-full text-black pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               />
             </div>
           </div>
@@ -137,7 +164,7 @@ export default function SupportForm() {
               onChange={handleChange}
               placeholder="How can we help you ?"
               rows="5"
-              className="w-full text-gray-700 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
+              className="w-full text-black px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
             ></textarea>
           </div>
 

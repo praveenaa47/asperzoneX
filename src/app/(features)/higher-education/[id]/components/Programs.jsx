@@ -75,7 +75,7 @@ export default function Programs() {
         <div className="hidden md:grid lg:hidden md:grid-cols-2 gap-5">
           {courses.map((course) => (
             <div
-              key={course.id}
+              key={course._id}
               onClick={()=>router.push(`/course-detail/${course._id}`)}
               className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300"
             >

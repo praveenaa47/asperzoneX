@@ -30,7 +30,7 @@ export default function LatestBlogs() {
         {blogs && blogs.length > 0 ? (
           blogs.map((blog) => (
             <div
-              key={blog.id}
+              key={blog._id}
               className="flex-shrink-0 w-[280px] md:w-auto overflow-hidden hover:shadow-xl duration-300 snap-start"
             >
               <div className="relative">

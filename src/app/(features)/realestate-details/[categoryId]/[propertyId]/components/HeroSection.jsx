@@ -12,17 +12,48 @@ import {
   Calendar,
   Clock,
 } from "lucide-react";
+import { addEnquiry } from "@/redux/slices/enquirySlice";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "next/navigation";
 
 export default function RealEstateHero({ property }) {
+  
   const [isFavorite, setIsFavorite] = useState(false);
+  const dispatch = useDispatch();
   const [formData, setFormData] = useState({
     date: "",
     time: "",
-    name: "John",
-    phone: "126555",
+    name: "",
+    phone: "",
   });
 
-  // Use property images if available, otherwise fallback to default images
+  const { categoryId } = useParams()
+
+
+  const handleSchedule = () => {
+  const payload = {
+    category: categoryId,
+    name: formData.name,
+    phone: formData.phone,
+    date: formData.date,
+    time: formData.time,
+  };
+
+  console.log("Schedule Enquiry Payload:", payload);
+
+  dispatch(addEnquiry(payload))
+    .unwrap()
+    .then((res) => {
+      addtoToast("Enquiry submitted successfully!");
+      console.log("API Response:", res);
+    })
+    .catch((err) => {
+      console.log("Enquiry Error:", err);
+      addtoToast("Failed to submit enquiry.");
+    });
+};
+
+
   const images =
     property?.images?.length > 0
       ? property.images
@@ -39,9 +70,6 @@ export default function RealEstateHero({ property }) {
     });
   };
 
-  const handleSchedule = () => {
-    alert("Viewing scheduled successfully!");
-  };
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -230,12 +258,14 @@ export default function RealEstateHero({ property }) {
 
               {/* Contact Buttons */}
               <div className="space-y-3">
-                <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2">
+                <button
+                onClick={()=>router.push("/conatctus")}
+                 className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2">
                   <Phone className="w-5 h-5" />
                   Contact{" "}
                   {property?.ownershipType === "Owner" ? "Owner" : "Agent"}
                 </button>
-                <button className="w-full bg-blue-50 text-blue-600 py-3 px-4 rounded-lg font-medium hover:bg-blue-100 transition flex items-center justify-center gap-2">
+                {/* <button className="w-full bg-blue-50 text-blue-600 py-3 px-4 rounded-lg font-medium hover:bg-blue-100 transition flex items-center justify-center gap-2">
                   <svg
                     className="w-5 h-5"
                     fill="none"
@@ -243,14 +273,14 @@ export default function RealEstateHero({ property }) {
                     stroke="currentColor"
                   >
                     <path
-                      strokeLinecap="round"
+                      strokeLinecap="round" 
                       strokeLinejoin="round"
                       strokeWidth={2}
                       d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
                     />
                   </svg>
                   Send Message
-                </button>
+                </button> */}
               </div>
 
               {/* Schedule Form */}

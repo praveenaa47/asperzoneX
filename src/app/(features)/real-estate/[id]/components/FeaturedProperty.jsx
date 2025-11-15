@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Heart, MapPin, Bed, Bath, Maximize, ArrowRight } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { getEstateproperty } from "@/redux/slices/realestateProprtySlice";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   AddtoWishlist,
   getWishlist,
@@ -18,6 +18,7 @@ export default function FeaturedProperties() {
   const { items: wishlistItems } = useSelector((state) => state.wishlist);
   const router = useRouter();
   const { addToast } = useToast();
+  const { id } = useParams();
 
   useEffect(() => {
     dispatch(getEstateproperty());
@@ -96,7 +97,9 @@ export default function FeaturedProperties() {
         {featuredProperties.map((property) => (
           <div
             key={property.id}
-            onClick={() => router.push(`/realestate-details/${property._id}`)}
+            onClick={() =>
+  router.push(`/realestate-details/${id}/${property._id}`)
+}
             className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
           >
             {}
