@@ -4,17 +4,25 @@ import { useDispatch, useSelector } from 'react-redux';
 import PropertyList from './components/PropertyList';
 import PropertyModal from './components/PropertyModel';
 import { getMaincategory } from "@/redux/slices/MainCategorySlice";
-import { addEstateproperty, deleteEstateproperty, getEstateproperty, updateEstateproperty } from '@/redux/slices/realestateProprtySlice';
+import { addEstateproperty, deleteEstateproperty, getEstateproperty, getUserEstateproperty, updateEstateproperty } from '@/redux/slices/realestateProprtySlice';
 import DeleteConfirmationModal from '../../components/DeleteModal';
 import { useToast } from '../../components/Toast';
 import PropertyViewModal from './components/PropertyViewModal';
+import { useRouter } from 'next/navigation';
+import { Bell } from 'lucide-react';
 
 const PropertyManagement = () => {
   const dispatch = useDispatch();
   const { data: properties, loading, error } = useSelector((state) => state.property);
   const { data: categoryData } = useSelector((state) => state.category);
+  const { data: pendingApprovals } = useSelector((state) => state.property);
+const pendingCount = pendingApprovals?.length || 0;
+
   const [viewPropertyId, setViewPropertyId] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const router = useRouter();
+
+
 
   const [categories, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,10 +38,15 @@ const PropertyManagement = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const { addToast } = useToast();
 
+  const handleNavigate = () => {
+    router.push("/admin/property-approval");
+  };
+
   // Load properties and categories on component mount
   useEffect(() => {
     dispatch(getEstateproperty());
     dispatch(getMaincategory());
+     dispatch(getUserEstateproperty());
   }, [dispatch]);
 
   useEffect(() => {
@@ -69,67 +82,67 @@ const PropertyManagement = () => {
     setIsModalOpen(true);
   };
 
- const handleSaveProperty = async (propertyData) => {
-  try {
-    const formData = new FormData();
+  const handleSaveProperty = async (propertyData) => {
+    try {
+      const formData = new FormData();
 
-    // Append basic fields
-    formData.append('propertyName', propertyData.propertyName);
-    formData.append('description', propertyData.description);
-    formData.append('propertyType', propertyData.propertyType);
-    formData.append('bedType', propertyData.bedType);
-    formData.append('bedrooms', propertyData.bedrooms.toString());
-    formData.append('bathrooms', propertyData.bathrooms.toString());
-    formData.append('yearBuilt', propertyData.yearBuilt.toString());
-    formData.append('lotSize', propertyData.lotSize);
-    formData.append('furnished', propertyData.furnished);
-    formData.append('email', propertyData.email);
-    formData.append('phone', propertyData.phone);
-    formData.append('ownershipType', propertyData.ownershipType);
+      // Append basic fields
+      formData.append('propertyName', propertyData.propertyName);
+      formData.append('description', propertyData.description);
+      formData.append('propertyType', propertyData.propertyType);
+      formData.append('bedType', propertyData.bedType);
+      formData.append('bedrooms', propertyData.bedrooms.toString());
+      formData.append('bathrooms', propertyData.bathrooms.toString());
+      formData.append('yearBuilt', propertyData.yearBuilt.toString());
+      formData.append('lotSize', propertyData.lotSize);
+      formData.append('furnished', propertyData.furnished);
+      formData.append('email', propertyData.email);
+      formData.append('phone', propertyData.phone);
+      formData.append('ownershipType', propertyData.ownershipType);
 
-    // Append location object
-    formData.append('location[country]', propertyData.location.country);
-    formData.append('location[state]', propertyData.location.state);
-    formData.append('location[district]', propertyData.location.district);
-    formData.append('location[city]', propertyData.location.city);
+      // Append location object
+      formData.append('location[country]', propertyData.location.country);
+      formData.append('location[state]', propertyData.location.state);
+      formData.append('location[district]', propertyData.location.district);
+      formData.append('location[city]', propertyData.location.city);
 
-    // Append price object
-    formData.append('price[amount]', propertyData.price.amount.toString());
-    formData.append('price[period]', propertyData.price.period);
-    formData.append('price[negotiable]', propertyData.price.negotiable.toString());
+      // Append price object
+      formData.append('price[amount]', propertyData.price.amount.toString());
+      formData.append('price[period]', propertyData.price.period);
+      formData.append('price[negotiable]', propertyData.price.negotiable.toString());
 
-    // Append amenities as array
-    propertyData.amenities.forEach((amenity, index) => {
-      formData.append(`amenities[${index}]`, amenity);
-    });
+      // Append amenities as array
+      propertyData.amenities.forEach((amenity, index) => {
+        formData.append(`amenities[${index}]`, amenity);
+      });
 
-    // Handle images - append new files
-    propertyData.images.forEach((image, index) => {
-      if (typeof image !== 'string') { 
-        formData.append('images', image);
+      // Handle images - append new files
+      propertyData.images.forEach((image, index) => {
+        if (typeof image !== 'string') {
+          formData.append('images', image);
+        }
+      });
+
+      if (editingProperty) {
+        // Update existing property
+        await dispatch(updateEstateproperty({
+          id: editingProperty._id,
+          formData
+        })).unwrap();
+        addToast("success", "Property updated successfully ✅");
+      } else {
+        // Add new property
+        await dispatch(addEstateproperty(formData)).unwrap();
+        addToast("success", "Property added successfully ✅");
       }
-    });
 
-    if (editingProperty) {
-      // Update existing property
-      await dispatch(updateEstateproperty({
-        id: editingProperty._id,
-        formData
-      })).unwrap();
-      addToast("success", "Property updated successfully ✅");
-    } else {
-      // Add new property
-      await dispatch(addEstateproperty(formData)).unwrap();
-      addToast("success", "Property added successfully ✅");
+      setIsModalOpen(false);
+      setEditingProperty(null);
+    } catch (error) {
+      console.error('Failed to save property:', error);
+      addToast("error", "Failed to save property ❌");
     }
-
-    setIsModalOpen(false);
-    setEditingProperty(null);
-  } catch (error) {
-    console.error('Failed to save property:', error);
-    addToast("error", "Failed to save property ❌");
-  }
-};
+  };
 
   const handleDeleteProperty = (id) => {
     setDeleteId(id);
@@ -210,7 +223,7 @@ const PropertyManagement = () => {
   const ownershipTypes = [
     { value: 'Owner', label: 'Owner' },
     { value: 'Dealer', label: 'Dealer' },
-    
+
   ];
 
   const amenitiesList = [
@@ -251,10 +264,30 @@ const PropertyManagement = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Property Management</h1>
-          <p className="text-gray-600">Manage your property listings and inventory</p>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Property Management</h1>
+            <p className="text-gray-600">Manage your property listings and inventory</p>
+          </div>
+
+          <button
+            onClick={handleNavigate}
+            className="relative px-4 py-2 border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 flex items-center gap-2 transition"
+          >
+            {/* Icon */}
+            <Bell className="w-5 h-5" />
+
+            View Approvals
+
+            {/* Badge */}
+            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full px-1">
+  {pendingCount}
+</span>
+
+          </button>
+
         </div>
+
 
         {/* Controls */}
         <div className="bg-white rounded-lg shadow mb-6 p-4">

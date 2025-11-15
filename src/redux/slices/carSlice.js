@@ -15,6 +15,18 @@ export const getAllCars = createAsyncThunk(
   }
 );
 
+export const getAllUserCars = createAsyncThunk(
+  "cars/getAllUserCars",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/cars/request`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to load cars");
+    }
+  }
+);
+
 export const getCarById = createAsyncThunk(
   "cars/getCarById",
   async (id, { rejectWithValue }) => {
@@ -138,6 +150,20 @@ const carSlice = createSlice({
       state.pagination = action.payload.pagination || null;
     })
     .addCase(getAllCars.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
+
+    .addCase(getAllUserCars.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(getAllUserCars.fulfilled, (state, action) => {
+      state.loading = false;
+      state.carList = action.payload.data || [];
+      state.pagination = action.payload.pagination || null;
+    })
+    .addCase(getAllUserCars.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload;
     })
